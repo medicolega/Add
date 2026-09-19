@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0B1220">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Z Medicine — Psychiatry Chart Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B1220; --surface:#141F35; --surface-2:#1B2A47;
+  --line: rgba(232,237,247,0.10); --ink:#EDF1FA; --ink-dim:#8B98B8;
+  --cyan:#29B6F6; --cyan-dim: rgba(41,182,246,0.18);
+  --green:#22C55E; --green-dim: rgba(34,197,94,0.16);
+  --red:#EF4444; --red-dim: rgba(239,68,68,0.16);
+  --gold:#F5B942; --radius: 16px; --radius-sm:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+body{
+  font-family:'IBM Plex Sans',sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(ellipse 900px 600px at 10% -10%, rgba(41,182,246,0.16), transparent 60%),
+    radial-gradient(ellipse 1000px 700px at 105% 110%, rgba(27,42,71,0.9), transparent 55%),
+    var(--bg);
+  min-height:100vh; min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:contain;
+}
+button, .cat-card, .topic-card, .opt-row, a{ touch-action:manipulation; -webkit-user-select:none; user-select:none; }
+input[type=range]{ touch-action:pan-x; }
+@supports not (backdrop-filter: blur(1px)){
+  .app-header{ background:rgba(11,18,32,0.97); }
+}
+.heading{font-family:'Calibri','Sora','Poppins',sans-serif; font-weight:700; color:#fff;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+.wrap{max-width:760px;margin:0 auto;}
+button{font-family:inherit; cursor:pointer;}
+.screen{display:none;}
+.screen.active{display:block;}
+
+/* ---- Sticky header ---- */
+.app-header{position:sticky; top:0; z-index:20; background:rgba(11,18,32,0.86); backdrop-filter:blur(14px); border-bottom:1px solid var(--line);}
+.header-row{display:flex; align-items:center; justify-content:space-between; padding:10px 18px 8px; max-width:760px; margin:0 auto;}
+.brand{display:flex; align-items:center; gap:10px;}
+.home-btn{width:28px;height:28px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s;}
+.home-btn:hover{color:var(--ink); border-color:var(--cyan);}
+.home-btn svg{width:16px;height:16px;}
+.wordmark{font-family:'Sora','Poppins',sans-serif; font-size:19px; font-weight:700; letter-spacing:0; white-space:nowrap;}
+.wordmark .z{color:var(--cyan);}
+.wordmark .med{color:var(--ink);}
+.header-counter{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--ink-dim);}
+.progress-track{height:4px; background:var(--surface-2); width:100%;}
+.progress-fill{height:100%; background:var(--cyan); width:0%; transition:width .25s ease;}
+.subheader-row{display:none; align-items:center; justify-content:space-between; padding:8px 18px 0; max-width:760px; margin:0 auto;}
+.subheader-row.active{display:flex;}
+.q-of-total{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; letter-spacing:1.5px; color:var(--ink-dim); text-transform:uppercase;}
+.score-pill{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--gold); background:var(--surface); border:1px solid var(--line); padding:5px 12px; border-radius:999px;}
+
+.main-content{padding:20px 18px 60px;}
+
+/* ---- cards shared ---- */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:16px;}
+
+/* ---- Level 1: category screen ---- */
+.hero{padding:6px 0 20px;}
+.hero h1{font-size:24px; margin-bottom:6px;}
+.hero p{color:var(--ink-dim); font-size:14px;}
+.cat-grid{display:flex; flex-direction:column; gap:12px;}
+.cat-card{display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; transition:.15s; text-align:left; width:100%;}
+.cat-card:hover{border-color:var(--cyan); background:var(--surface-2);}
+.cat-icon{width:44px;height:44px;border-radius:12px;background:var(--cyan-dim);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;}
+.cat-info{flex:1; min-width:0;}
+.cat-info .name{font-family:'Calibri','IBM Plex Sans',sans-serif; font-weight:700; color:#fff; font-size:15px; margin-bottom:2px;}
+.cat-info .meta{font-size:12.5px; color:var(--ink-dim); font-family:'IBM Plex Mono',monospace;}
+.cat-arrow{color:var(--ink-dim); flex-shrink:0;}
+.cat-card.mistakes{border-color:rgba(239,68,68,0.35);}
+.cat-card.mistakes .cat-icon{background:var(--red-dim); color:var(--red);}
+.cat-card.mistakes:hover{border-color:var(--red);}
+.cat-card.mistakes.empty{opacity:.55;}
+
+/* ---- Level 2: topic list ---- */
+.level2-toolbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+.back-btn{display:flex; align-items:center; gap:6px; color:var(--ink-dim); font-size:13.5px; background:none; border:none;}
+.back-btn:hover{color:var(--ink);}
+.back-btn svg{width:15px;height:15px;}
+.select-toggle{background:var(--surface-2); border:1px solid var(--line); color:var(--ink-dim); font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:999px;}
+.select-toggle.on{background:var(--cyan-dim); color:var(--cyan); border-color:var(--cyan);}
+.topic-list{display:flex; flex-direction:column; gap:10px; padding-bottom:90px;}
+.topic-card{display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px; transition:.15s; width:100%; text-align:left;}
+.topic-card:hover{border-color:var(--cyan);}
+.topic-card.checked{border-color:var(--cyan); background:var(--cyan-dim);}
+.topic-badge{width:28px;height:28px;border-radius:8px;background:var(--surface-2); border:1px solid var(--line); display:flex;align-items:center;justify-content:center;font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--ink-dim); flex-shrink:0;}
+.topic-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);flex-shrink:0;display:none;align-items:center;justify-content:center;}
+.topic-check svg{width:12px;height:12px;opacity:0;}
+.topic-card.checked .topic-check{background:var(--cyan); border-color:var(--cyan);}
+.topic-card.checked .topic-check svg{opacity:1;}
+.select-mode .topic-badge{display:none;}
+.select-mode .topic-check{display:flex;}
+.topic-info{flex:1; min-width:0;}
+.topic-info .t-name{font-family:'Calibri','IBM Plex Sans',sans-serif; font-weight:700; color:#fff; font-size:14px; margin-bottom:3px;}
+.topic-info .t-sub{font-size:12px; color:var(--ink-dim); font-family:'IBM Plex Mono',monospace;}
+.topic-info .t-progress{font-size:11.5px; color:var(--cyan); margin-top:3px; font-family:'IBM Plex Mono',monospace;}
+
+.floating-bar{position:fixed; left:0; right:0; bottom:0; z-index:15; padding:14px 18px calc(14px + env(safe-area-inset-bottom)); background:linear-gradient(180deg, transparent, rgba(11,18,32,0.9) 30%, var(--bg) 65%);}
+.floating-bar-inner{max-width:760px; margin:0 auto; display:flex; align-items:center; gap:12px;}
+.sel-count{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-dim); white-space:nowrap;}
+.btn-cyan{flex:1; background:var(--cyan); color:#04202c; border:none; padding:14px 18px; border-radius:999px; font-weight:700; font-size:14.5px; transition:.15s;}
+.btn-cyan:active{transform:scale(.98);}
+.btn-cyan:disabled{opacity:.35; cursor:not-allowed;}
+
+/* ---- Setup panel ---- */
+.setup-card{margin-bottom:16px; border-radius:22px; padding:26px 24px;}
+.setup-card h3{font-size:15px; margin-bottom:16px; color:var(--ink-dim); font-weight:600;}
+.status-line{font-size:12.5px; color:var(--cyan); font-family:'IBM Plex Mono',monospace; margin-bottom:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.status-line .clear-link{color:var(--ink-dim); text-decoration:underline; background:none; border:none; font-size:12px; cursor:pointer;}
+.status-line .clear-link:hover{color:var(--red);}
+.segmented{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px;}
+.seg-btn{background:var(--surface-2); border:1px solid var(--line); color:var(--ink-dim); padding:13px 24px; border-radius:999px; font-size:14px; font-weight:700; text-align:center; flex:0 0 auto;}
+.seg-btn.active{background:transparent; border:1.5px solid var(--cyan); color:var(--cyan);}
+.delay-slider{margin-top:4px;}
+.delay-slider label{font-size:12px; color:var(--ink-dim); display:block; margin-bottom:8px;}
+.delay-slider input[type=range]{width:100%; accent-color:var(--cyan);}
+.setup-desc{color:var(--ink-dim); font-size:14.5px; line-height:1.55; margin-bottom:20px;}
+
+/* ---- Question card ---- */
+.q-card{position:relative; overflow:hidden; margin-bottom:16px;}
+.q-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--cyan);}
+.review-badge{display:inline-block; font-size:10.5px; font-weight:700; color:var(--gold); background:rgba(245,185,66,0.14); border:1px solid rgba(245,185,66,0.3); padding:3px 9px; border-radius:999px; margin-bottom:10px;}
+.q-text{font-family:'Calibri','Sora','Poppins',sans-serif; font-size:16.5px; font-weight:700; color:#fff; line-height:1.45; margin-bottom:14px;}
+.options{display:flex; flex-direction:column; gap:10px;}
+.opt-row{display:flex; align-items:center; gap:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px; text-align:left; width:100%; transition:.12s;}
+.opt-row:not(.locked):hover{border-color:var(--cyan);}
+.opt-letter{width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,0.06); display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ink-dim); flex-shrink:0;}
+.opt-text{font-size:14px; color:var(--ink); line-height:1.35;}
+.opt-row.correct{border-color:var(--green); background:var(--green-dim);}
+.opt-row.correct .opt-letter{background:var(--green); color:#04220f;}
+.opt-row.wrong{border-color:var(--red); background:var(--red-dim);}
+.opt-row.wrong .opt-letter{background:var(--red); color:#2a0505;}
+.opt-row.dim{opacity:.55;}
+
+.nav-row{display:flex; gap:10px; margin-top:16px;}
+.nav-btn{flex:1; background:var(--surface); border:1px solid var(--line); color:var(--ink); padding:13px; border-radius:12px; font-weight:600; font-size:14px;}
+.nav-btn:disabled{opacity:.3; cursor:not-allowed;}
+.nav-btn.primary{background:var(--cyan); color:#04202c; border:none;}
+
+/* ---- toast ---- */
+.toast{position:fixed; bottom:24px; left:50%; transform:translate(-50%,20px); background:var(--surface-2); border:1px solid var(--line); color:var(--ink); padding:12px 20px; border-radius:999px; font-size:13px; z-index:40; opacity:0; transition:.25s; pointer-events:none;}
+.toast.show{opacity:1; transform:translate(-50%,0);}
+
+/* ---- Results ---- */
+.results-hero{text-align:center; padding:20px 0 8px;}
+.pct-big{font-family:'Sora','Poppins',sans-serif; font-size:52px; font-weight:800; color:var(--cyan); line-height:1;}
+.results-caption{color:var(--ink-dim); font-size:14px; margin-top:6px;}
+.stats-row{display:flex; gap:10px; margin:22px 0;}
+.stat-block{flex:1; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px; text-align:center;}
+.stat-block .n{font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:700;}
+.stat-block .l{font-size:11px; color:var(--ink-dim); margin-top:3px; text-transform:uppercase; letter-spacing:.5px;}
+.stat-block.correct .n{color:var(--green);}
+.stat-block.wrong .n{color:var(--red);}
+.review-list{display:flex; flex-direction:column; gap:10px; margin-bottom:18px;}
+.review-item{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px;}
+.review-item .rq{font-size:14px; font-weight:600; margin-bottom:10px; line-height:1.4;}
+.ra-row{display:flex; gap:8px; font-size:13px; margin-bottom:5px; line-height:1.4;}
+.ra-row .tag{flex-shrink:0; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:5px; text-transform:uppercase; height:fit-content;}
+.ra-row.wrong .tag{background:var(--red-dim); color:var(--red);}
+.ra-row.wrong span:last-child{color:#f1a3a3;}
+.ra-row.correct .tag{background:var(--green-dim); color:var(--green);}
+.ra-row.correct span:last-child{color:#9be3ba;}
+.review-remove{margin-left:auto; background:none; border:none; color:var(--ink-dim); font-size:11.5px; text-decoration:underline;}
+.empty-review{text-align:center; padding:30px 10px; color:var(--ink-dim); font-size:14px;}
+.results-actions{display:flex; gap:10px;}
+
+/* ---- Mistakes bank list view ---- */
+.bank-toolbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px; flex-wrap:wrap;}
+.bank-actions{display:flex; gap:8px;}
+.text-btn{background:none; border:none; color:var(--ink-dim); font-size:12.5px; text-decoration:underline;}
+.text-btn:hover{color:var(--ink);}
+.text-btn.danger{color:var(--red);}
+.bank-item{display:flex; align-items:flex-start; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:10px;}
+.bank-item .b-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);flex-shrink:0;margin-top:2px;display:none;align-items:center;justify-content:center;}
+.bank-item.select-mode .b-check{display:flex;}
+.bank-item.checked .b-check{background:var(--cyan);border-color:var(--cyan);}
+.bank-item .b-check svg{width:11px;height:11px;opacity:0;}
+.bank-item.checked .b-check svg{opacity:1;}
+.bank-item .b-info{flex:1; min-width:0;}
+.bank-item .b-q{font-size:13.5px; font-weight:600; margin-bottom:4px; line-height:1.4;}
+.bank-item .b-topic{font-size:11px; color:var(--ink-dim); font-family:'IBM Plex Mono',monospace;}
+.bank-item .b-remove{background:none;border:none;color:var(--ink-dim);font-size:11px;text-decoration:underline;flex-shrink:0;}
+
+.confirm-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:50; display:none; align-items:center; justify-content:center; padding:20px;}
+.confirm-overlay.active{display:flex;}
+.confirm-box{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:22px; max-width:340px; width:100%;}
+.confirm-box p{font-size:14px; margin-bottom:18px; line-height:1.5;}
+.confirm-actions{display:flex; gap:10px;}
+.confirm-actions button{flex:1; padding:11px; border-radius:10px; font-weight:600; font-size:13.5px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink);}
+.confirm-actions .danger{background:var(--red); border-color:var(--red); color:#fff;}
+
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-row">
+    <div class="brand">
+      <button class="home-btn" id="home-btn" style="visibility:hidden;" aria-label="Home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      </button>
+      <div class="wordmark"><span class="z">Z</span><span class="med"> Medicine</span></div>
+    </div>
+    <div class="header-counter" id="header-counter"></div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="subheader-row" id="subheader-row">
+    <div class="q-of-total" id="q-header-row">QUESTION 1 OF 1</div>
+    <div class="score-pill" id="score-pill">Score: 0</div>
+  </div>
+</header>
+
+<main class="main-content wrap">
+
+  <!-- ===================== LEVEL 1: HOME ===================== -->
+  <section class="screen" id="screen-home">
+    <div class="hero">
+      <h1 class="heading">Choose a section to start</h1>
+      <p>Pick a category to review, or jump into your mistakes bank.</p>
+    </div>
+    <div class="cat-grid" id="cat-grid"></div>
+  </section>
+
+  <!-- ===================== LEVEL 2: TOPIC LIST ===================== -->
+  <section class="screen" id="screen-level2">
+    <div class="level2-toolbar">
+      <button class="back-btn" id="level2-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>Back</button>
+      <button class="select-toggle" id="select-toggle-btn">Select</button>
+    </div>
+    <h2 class="heading" id="level2-title" style="font-size:20px;margin-bottom:14px;"></h2>
+    <div class="topic-list" id="topic-list"></div>
+  </section>
+  <div class="floating-bar" id="level2-floatbar" style="display:none;">
+    <div class="floating-bar-inner">
+      <span class="sel-count" id="sel-count">0 selected</span>
+      <button class="btn-cyan" id="start-selected-btn" disabled>Start Selected</button>
+    </div>
+  </div>
+
+  <!-- ===================== SETUP PANEL ===================== -->
+  <section class="screen" id="screen-setup">
+    <div class="level2-toolbar">
+      <button class="back-btn" id="setup-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>Back</button>
+    </div>
+    <h2 class="heading" id="setup-title" style="font-size:30px;line-height:1.2;margin-bottom:10px;"></h2>
+    <p class="setup-desc" id="setup-desc"></p>
+    <div class="status-line" id="setup-status" style="display:none;"></div>
+    <div class="card setup-card">
+      <h3>Repeat missed questions</h3>
+      <div class="segmented">
+        <button class="seg-btn" data-mode="none">No repeat</button>
+        <button class="seg-btn" data-mode="time">After a delay</button>
+        <button class="seg-btn active" data-mode="end">After all questions</button>
+      </div>
+      <div class="delay-slider" id="delay-slider-wrap" style="display:none;">
+        <label>Delay: <span id="delay-label">5 min</span></label>
+        <input type="range" id="delay-range" min="1" max="15" value="5">
+      </div>
+    </div>
+    <button class="btn-cyan" id="start-quiz-btn" style="width:100%;">Start Quiz</button>
+  </section>
+
+  <!-- ===================== QUIZ ===================== -->
+  <section class="screen" id="screen-quiz">
+    <div class="card q-card" id="q-card"></div>
+    <div class="nav-row">
+      <button class="nav-btn" id="btn-prev">‹ Previous</button>
+      <button class="nav-btn primary" id="btn-next">Next ›</button>
+    </div>
+    <div style="text-align:center;margin-top:16px;">
+      <button class="text-btn" id="quiz-exit-btn">Exit to home (progress is saved)</button>
+    </div>
+  </section>
+
+  <!-- ===================== RESULTS ===================== -->
+  <section class="screen" id="screen-results">
+    <div class="results-hero">
+      <div class="pct-big" id="res-pct">0%</div>
+      <div class="results-caption" id="res-caption"></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-block correct"><div class="n" id="res-correct">0</div><div class="l">Correct</div></div>
+      <div class="stat-block wrong"><div class="n" id="res-wrong">0</div><div class="l">Wrong</div></div>
+      <div class="stat-block"><div class="n" id="res-total">0</div><div class="l">Total</div></div>
+    </div>
+    <div class="review-list" id="review-list"></div>
+    <div class="results-actions">
+      <button class="nav-btn" id="btn-results-home">Home</button>
+      <button class="nav-btn primary" id="btn-restart">Restart Quiz</button>
+    </div>
+  </section>
+
+  <!-- ===================== MISTAKES BANK MANAGE ===================== -->
+  <section class="screen" id="screen-bank">
+    <div class="level2-toolbar">
+      <button class="back-btn" id="bank-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>Back</button>
+      <button class="select-toggle" id="bank-select-btn">Select</button>
+    </div>
+    <h2 class="heading" style="font-size:20px;margin-bottom:10px;">My Mistakes</h2>
+    <div class="bank-toolbar">
+      <span class="mono" id="bank-sel-count" style="display:none;font-size:12.5px;color:var(--ink-dim);"></span>
+      <div class="bank-actions">
+        <button class="text-btn" id="bank-delete-selected-btn" style="display:none;">Delete selected</button>
+        <button class="text-btn danger" id="bank-delete-all-btn">Delete all</button>
+      </div>
+    </div>
+    <div id="bank-items"></div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <p id="confirm-text"></p>
+    <div class="confirm-actions">
+      <button id="confirm-no">Cancel</button>
+      <button class="danger" id="confirm-yes">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="quiz-data">
+[{"id": "psychiatry", "name": "Psychiatry", "icon": "🧠", "topics": [{"id": "delirium", "name": "Delirium", "icon": "🧩", "questions": [{"id": 1, "q": "Which of the following best defines Delirium?", "options": ["A chronic, progressive neurocognitive disorder", "An acute, fluctuating disturbance in attention and awareness", "A primary deficit in long-term memory storage", "A persistent state of low mood and psychomotor retardation"], "correct": 1}, {"id": 2, "q": "Delirium is best described as:", "options": ["Chronic memory loss only", "Acute change in mental status", "Progressive personality disorder", "Lifelong intellectual disability", "Stable cognitive impairment"], "correct": 1}, {"id": 3, "q": "The cardinal feature of delirium is impaired:", "options": ["Intelligence", "Judgment", "Attention", "Insight", "Language"], "correct": 2}, {"id": 4, "q": "Which of the following is the hallmark feature that distinguishes Delirium from Dementia?", "options": ["Long-term memory loss", "Acute onset with fluctuating course", "Presence of aphasia", "Irreversible cognitive decline"], "correct": 1}, {"id": 5, "q": "Delirium usually develops over:", "options": ["Months", "Years", "Hours to days", "Weeks to months", "Several years"], "correct": 2}, {"id": 6, "q": "The course of delirium is typically:", "options": ["Constant and stable", "Slowly progressive", "Fluctuating throughout the day", "Lifelong without remission", "Seasonal"], "correct": 2}, {"id": 7, "q": "Which of the following populations is at the highest risk for developing delirium?", "options": ["Teenagers", "Young adults", "Older adults", "Children"], "correct": 2}, {"id": 8, "q": "Which of the following patients is at the highest risk of developing delirium?", "options": ["A 30-year-old patient with mild anxiety", "A 45-year-old patient with controlled hypertension", "A 70-year-old patient who is severely dehydrated afer recent surgery", "A 25-year-old patient with no medical history"], "correct": 2}, {"id": 9, "q": "What is the most common underlying cause of delirium?", "options": ["Electrolyte imbalance", "Hypoglycemia", "Infection", "Drug intoxication"], "correct": 2}, {"id": 10, "q": "Delirium can be caused by a variety of factors. Which of the following is LEAST likely to trigger delirium?", "options": ["Severe dehydration", "A serious systemic infection", "Achieving a resgul, high-quality night's sleep", "Acute electrolyte imbalance"], "correct": 2}, {"id": 11, "q": "Which of the following is NOT a common symptom of Delirium?", "options": ["Visual hallucinations", "Disturbance of the sleep-wake cycle", "Fixed focal neurological deficits", "Fluctuating level of consciousness"], "correct": 2}, {"id": 12, "q": "Which symptom commonly accompanies delirium?", "options": ["Persistent elevated mood", "Disturbed sleep-wake cycle", "Isolated hearing loss", "Hyperthyroidism", "Aphasia only"], "correct": 1}, {"id": 13, "q": "Which type of hallucination is most common in delirium?", "options": ["Gustatory", "Olfactory", "Visual", "Tactile", "Auditory"], "correct": 2}, {"id": 14, "q": "Which cognitive function is commonly impaired early in delirium?", "options": ["Mathematical ability only", "Recent memory", "Remote memory only", "Reading only", "Writing only"], "correct": 1}, {"id": 15, "q": "Types of delirium includes:", "options": ["Hyperactive", "Hypoactive", "Mixed", "All of the above"], "correct": 3}, {"id": 16, "q": "Hypoactive delirium is characterized mainly by:", "options": ["Aggression and excitement", "Lethargy with reduced arousal", "Persistent euphoria", "Hyperactivity only", "Increased appetite"], "correct": 1}, {"id": 17, "q": "Hyperactive delirium commonly presents with:", "options": ["Psychomotor retardation only", "Agitation and hallucinations", "Complete mutism", "Severe depression only", "Cataplexy"], "correct": 1}, {"id": 18, "q": "Which of the following diagnostic tools is most helpful in confirming a diagnosis of delirium by detecting generalized slowing of brain activity?", "options": ["Blood coagulation test", "Chest X-ray", "EEG (Electroencephalogram)", "Structural MRI"], "correct": 2}, {"id": 19, "q": "A widely used bedside tool for diagnosing delirium is:", "options": ["MMSE", "HAM-D", "CAM", "PANSS", "YMRS"], "correct": 2}, {"id": 20, "q": "Which non-pharmacological intervention has been proven to be most effective in preventing delirium in a hospital setting?", "options": ["Total sensory deprivation", "Continuous loud background noise", "Frequent reorientation and maintaining a normal sleep-wake cycle", "Restricting all family visits"], "correct": 2}]}, {"id": "dementia", "name": "Dementia", "icon": "🧠", "questions": [{"id": 21, "q": "Dementia is primarily characterized by:", "options": ["Impaired consciousness", "Acquired decline in cognitive abilities", "Acute psychosis", "Fluctuating attention only", "Hyperactivity"], "correct": 1}, {"id": 22, "q": "In dementia, cognitive deficits represent:", "options": ["A congenital disorder", "A decline from previous functioning", "Temporary confusion only", "Normal aging", "Drug intoxication only"], "correct": 1}, {"id": 23, "q": "The prevalence of dementia is highest among people:", "options": ["Under 40 years", "40-50 years", "Over 85 years", "20-30 years", "50-60 years"], "correct": 2}, {"id": 24, "q": "What is the most common type of dementia?", "options": ["Alzheimer's disease", "Vascular dementia", "Lewy body dementia", "Frontotemporal dementia", "Parkinson's disease dementia"], "correct": 0}, {"id": 25, "q": "Which is the most common cause of dementia according to the lecture?", "options": ["Vascular dementia", "Huntington disease", "Alzheimer's disease", "Parkinson disease", "Creutzfeldt-Jakob disease"], "correct": 2}, {"id": 26, "q": "What is a potential risk factor for developing Alzheimer's disease?", "options": ["Regular exercise", "High levels of education", "Mediterranean diet", "Family history of Alzheimer's disease", "None of the above"], "correct": 3}, {"id": 27, "q": "Which condition is classified as a neurodegenerative cause of dementia?", "options": ["Hypothyroidism", "Alzheimer's disease", "Vitamin B12 deficiency", "Hepatic failure", "Carbon monoxide poisoning"], "correct": 1}, {"id": 28, "q": "Which vitamin deficiency may lead to dementia?", "options": ["Vitamin C", "Vitamin D", "Vitamin B12", "Vitamin K", "Vitamin E"], "correct": 2}, {"id": 29, "q": "Cortical dementia commonly presents with:", "options": ["Severe extrapyramidal signs", "Major language and memory impairment", "Hyperthyroidism", "Visual loss only", "Increased consciousness"], "correct": 1}, {"id": 30, "q": "Which brain region is mainly affected in cortical dementia?", "options": ["Cerebellum only", "Temporal and parietal cortex", "Medulla only", "Spinal cord", "Pituitary gland"], "correct": 1}, {"id": 31, "q": "Subcortical dementia is commonly associated with:", "options": ["Motor slowing", "Isolated aphasia", "Preserved movement", "Hyperactivity only", "Complete memory loss at onset"], "correct": 0}, {"id": 32, "q": "Which disease is an example of subcortical dementia?", "options": ["Alzheimer's disease", "Parkinson's disease", "Frontotemporal dementia", "Diffuse Lewy body disease", "Cortical vascular dementia"], "correct": 1}, {"id": 33, "q": "Which of the following is a behavioral and psychological symptom of dementia?", "options": ["Memory loss", "Impaired judgment and decision-making", "Visual hallucinations", "Difficulty with language", "None of the above"], "correct": 2}, {"id": 34, "q": "What is the purpose of imaging studies in the diagnosis of dementia?", "options": ["To make a definitive diagnosis of dementia", "To determine the type of dementia", "To assess the severity of dementia", "To rule out other conditions that can mimic dementia", "To identify structural abnormalities in the brain"], "correct": 3}, {"id": 35, "q": "Which of the following is a potential non-pharmacological intervention for dementia?", "options": ["Antidepressant medication", "Cholinesterase inhibitor", "Physical exercise", "Memantine", "None of the above"], "correct": 2}, {"id": 36, "q": "Which of the following is a potential future treatment for dementia?", "options": ["Antibiotics", "Chemotherapy", "Immunotherapy", "Radiation therapy", "None of the above"], "correct": 2}, {"id": 37, "q": "What is the role of caregiver support and education in dementia care?", "options": ["To provide respite care for caregivers", "To improve access to care for individuals with dementia", "To support and educate caregivers on how to provide optimal care", "All of the above", "None of the above"], "correct": 2}, {"id": 38, "q": "What is the impact of dementia on society?", "options": ["Increased healthcare costs", "Decreased productivity", "Increased caregiver burden", "All of the above", "None of the above"], "correct": 3}, {"id": 39, "q": "What is the potential benefit of early diagnosis and intervention in dementia?", "options": ["Improved quality of life", "Delayed disease progression", "Reduced healthcare costs", "All of the above", "None of the above"], "correct": 3}, {"id": 40, "q": "What is the most important factor affecting the prognosis of dementia?", "options": ["Age at onset", "Severity of symptoms", "Type of dementia", "Presence of comorbidities", "All of the above"], "correct": 4}]}, {"id": "schizophrenia-part-1", "name": "Schizophrenia (Part 1)", "icon": "🌀", "questions": [{"id": 41, "q": "Schizophrenia is primarily characterized by disturbance in:", "options": ["Blood pressure regulation", "Thought, perception, and behavior", "Hearing only", "Liver function", "Muscle strength"], "correct": 1}, {"id": 42, "q": "The usual age of onset of schizophrenia is:", "options": ["Infancy", "Childhood only", "Late adolescence or early adulthood", "Afer 70 years", "Neonatal period"], "correct": 2}, {"id": 43, "q": "Which symptom must be present among the required DSM-5 criteria of schizophrenia?", "options": ["Catatonia", "Negative symptoms", "Delusions, hallucinations, or disorganized speech", "Social withdrawal"], "correct": 2}, {"id": 44, "q": "Before diagnosing schizophrenia, which condition must be excluded?", "options": ["Hypertension", "Schizoaffective disorder", "Asthma", "Migraine"], "correct": 1}, {"id": 45, "q": "A person who shows bizarre speech and disorganized behavior most likely has:", "options": ["Catatonic schizophrenia", "Disorganized schizophrenia", "Residual schizophrenia", "Paranoid schizophrenia"], "correct": 1}, {"id": 46, "q": "Which type of schizophrenia is characterized mainly by delusions and auditory hallucinations?", "options": ["Residual schizophrenia", "Catatonic schizophrenia", "Paranoid schizophrenia", "Disorganized schizophrenia"], "correct": 2}, {"id": 47, "q": "Residual schizophrenia refers to a person who:", "options": ["Has never had schizophrenia symptoms", "Currently has severe hallucinations", "Has a past episode but currently no major symptoms", "Only has disorganized speech"], "correct": 2}, {"id": 48, "q": "Undifferentiated schizophrenia is diagnosed when:", "options": ["Symptoms are completely absent", "Only hallucinations are present", "A person fits two or more types of schizophrenia", "The patient has movement problems only"], "correct": 2}, {"id": 49, "q": "Which of the following is considered a positive symptom of schizophrenia?", "options": ["Avolition", "Flat affect", "Disorganized speech", "Social isolation"], "correct": 2}, {"id": 50, "q": "Which symptom is considered a positive symptom of schizophrenia?", "options": ["Apathy", "Flat affect", "Hallucinations", "Social withdrawal", "Poor motivation"], "correct": 2}, {"id": 51, "q": "The most common type of hallucination in schizophrenia is:", "options": ["Visual", "Auditory", "Gustatory", "Olfactory", "Tactile"], "correct": 1}, {"id": 52, "q": "A Fixed false belief despite clear evidence to the contrary is called:", "options": ["Illusion", "Obsession", "Delusion", "Confabulation", "Phobia"], "correct": 2}, {"id": 53, "q": "Which feature is an example of disorganized thinking?", "options": ["Goal-directed speech", "Logical reasoning", "Loose associations", "Normal attention", "Good concentration"], "correct": 2}, {"id": 54, "q": "Which is an example of a negative symptom?", "options": ["Delusion", "Hallucination", "Blunted affect", "Thought insertion", "Disorganized speech"], "correct": 2}, {"id": 55, "q": "Reduced emotional expression is known as:", "options": ["Euphoria", "Blunted affect", "Anxiety", "Elation", "Panic"], "correct": 1}, {"id": 56, "q": "Avolition refers to:", "options": ["Excessive energy", "Increased appetite", "Lack of motivation", "Fear of crowds", "Excessive talking"], "correct": 2}, {"id": 57, "q": "Social withdrawal in schizophrenia is classified as a:", "options": ["Positive symptom", "Negative symptom", "Cognitive symptom", "Mood symptom", "Neurological sign"], "correct": 1}, {"id": 58, "q": "What is considered the First-line treatment for many patients with Schizophrenia?", "options": ["Antibiotics", "Antipsychotics", "Antidepressants", "Sedatives"], "correct": 1}, {"id": 59, "q": "Which of the following is a low-potency typical neuroleptic?", "options": ["Haloperidol", "Fluphenazine", "Chlorpromazine", "Diazepam"], "correct": 2}, {"id": 60, "q": "Increased prolactin levels are especially associated with:", "options": ["Haloperidol", "Fluphenazine", "Sulpiride", "Aspirin"], "correct": 2}]}, {"id": "schizophrenia-part-2", "name": "Schizophrenia (Part 2)", "icon": "😔", "questions": [{"id": 61, "q": "The core feature of schizophrenia is:", "options": ["Mood disturbance", "Disturbance in thought and perception", "Memory loss", "Loss of consciousness"], "correct": 1}, {"id": 62, "q": "Which factor increases the risk of developing schizophrenia?", "options": ["Positive family history", "Regular exercise", "High-Uber diet", "Normal sleep", "Vaccination"], "correct": 0}, {"id": 63, "q": "Minimum duration required for diagnosis of schizophrenia according to DSM-5:", "options": ["1 week", "1 month", "3 months", "6 months"], "correct": 3}, {"id": 64, "q": "The diagnosis of schizophrenia requires symptoms to persist for at least:", "options": ["1 week", "2 weeks", "1 month", "6 months", "2 years"], "correct": 3}, {"id": 65, "q": "Which neurotransmitter is most associated with schizophrenia?", "options": ["Serotonin", "Dopamine", "Acetylcholine", "GABA"], "correct": 1}, {"id": 66, "q": "The dopamine hypothesis mainly implicates excess activity in the:", "options": ["Cholinergic system", "Dopaminergic system", "Serotonergic system", "GABAergic system", "Glutamatergic system"], "correct": 1}, {"id": 67, "q": "Which of the following is a positive symptom of schizophrenia?", "options": ["Flat affect", "Social withdrawal", "Hallucinations", "Lack of motivation"], "correct": 2}, {"id": 68, "q": "The most common type of hallucination in schizophrenia is:", "options": ["Visual", "Olfactory", "Gustatory", "Auditory"], "correct": 3}, {"id": 69, "q": "Which type of schizophrenia symptom responds best to antipsychotic medication?", "options": ["Negative symptoms", "Positive symptoms", "Cognitive impairment", "Personality changes", "Social isolation alone"], "correct": 1}, {"id": 70, "q": "Which symptom is considered a negative symptom?", "options": ["Delusion", "Auditory hallucination", "Anhedonia", "Disorganized speech"], "correct": 2}, {"id": 71, "q": "A patient believes that strangers are trying to harm him. This is:", "options": ["Grandiose delusion", "Nihilistic delusion", "Persecutory delusion", "Somatic delusion"], "correct": 2}, {"id": 72, "q": "Which symptom is classified as a delusion?", "options": ["Hearing voices", "Seeing flashes of light", "False belief of being persecuted", "Flat affect", "Lack of motivation"], "correct": 2}, {"id": 73, "q": "A patient believes strangers are talking about him on television. This is a:", "options": ["Delusion of reference", "Grandiose delusion", "Nihilistic delusion", "Somatic delusion", "Obsession"], "correct": 0}, {"id": 74, "q": "First-line treatment for schizophrenia is:", "options": ["Benzodiazepines", "Antidepressants", "Antipsychotics", "Mood stabilizers"], "correct": 2}, {"id": 75, "q": "First-line treatment for schizophrenia generally includes:", "options": ["Antidepressants", "Mood stabilizers only", "Antipsychotic medications", "Benzodiazepines only", "Stimulants"], "correct": 2}, {"id": 76, "q": "Extrapyramidal side effects are more common with:", "options": ["Typical antipsychotics", "Atypical antipsychotics", "SSRIs", "TCAs"], "correct": 0}, {"id": 77, "q": "Which antipsychotic has a risk of agranulocytosis?", "options": ["Haloperidol", "Risperidone", "Clozapine", "Olanzapine"], "correct": 2}, {"id": 78, "q": "Which atypical antipsychotic is particularly effective in treatment-resistant schizophrenia?", "options": ["Haloperidol", "Chlorpromazine", "Clozapine", "Diazepam", "Fluoxetine"], "correct": 2}, {"id": 79, "q": "Before starting clozapine, regular monitoring of which parameter is essential?", "options": ["Blood glucose", "White blood cell count", "Serum calcium", "Liver enzymes only", "Urine ketones"], "correct": 1}, {"id": 80, "q": "Which intervention improves long-term outcome in schizophrenia?", "options": ["Stopping medication afer improvement", "Psychoeducation with medication adherence", "Isolation from family", "High-dose sedatives", "Avoiding follow-up"], "correct": 1}]}, {"id": "autism-spectrum-disorder", "name": "Autism Spectrum Disorder", "icon": "⚡", "questions": [{"id": 81, "q": "Autism Spectrum Disorder is primarily a:", "options": ["Learning disability", "Neurodevelopmental disorder", "Mood disorder", "Behavioral disorder"], "correct": 1}, {"id": 82, "q": "Autism Spectrum Disorder is classified as a:", "options": ["Mood disorder", "Neurodevelopmental disorder", "Personality disorder", "Psychotic disorder", "Dissociative disorder"], "correct": 1}, {"id": 83, "q": "Which of the following is a core symptom of autism spectrum disorder?", "options": ["Excessive talking without pause", "Difficulty with social communication and interaction", "Frequent headaches", "Loss of motor skills"], "correct": 1}, {"id": 84, "q": "The core features of Autism Spectrum Disorder include deficits in:", "options": ["Memory and orientation only", "Social communication and interaction", "Vision and hearing", "Intelligence only", "Motor power only"], "correct": 1}, {"id": 85, "q": "Another core feature of Autism Spectrum Disorder is:", "options": ["Delusions", "Repetitive and restricted behaviors", "Panic attacks", "Mania", "Hallucinations"], "correct": 1}, {"id": 86, "q": "The term \"spectrum\" in Autism Spectrum Disorder refers to:", "options": ["The range of ages when autism appears", "The variety in types and severity of symptoms", "The number of genetic mutations involved", "The different colors used in awareness ribbons"], "correct": 1}, {"id": 87, "q": "Symptoms of Autism Spectrum Disorder usually begin:", "options": ["In late adulthood", "During early childhood", "Afer 40 years of age", "During adolescence only", "Afer retirement"], "correct": 1}, {"id": 88, "q": "Autism can usually be reliably diagnosed by age:", "options": ["1 month", "2 years", "10 years", "18 years"], "correct": 1}, {"id": 89, "q": "Which gender is statistically more likely to be diagnosed with autism?", "options": ["Males", "Females", "Equal in both", "Only children assigned male at birth"], "correct": 0}, {"id": 90, "q": "Children with Autism Spectrum Disorder commonly have difficulty with:", "options": ["Social reciprocity", "Blood pressure regulation", "Renal function", "Visual acuity", "Hearing thresholds"], "correct": 0}, {"id": 91, "q": "Which communication feature may be present in Autism Spectrum Disorder?", "options": ["Pressured speech", "Delayed language development", "Aphasia due to stroke", "Dysarthria only", "Echopraxia"], "correct": 1}, {"id": 92, "q": "Which of the following is an example of restricted or repetitive behavior in autism?", "options": ["Making strong eye contact", "Lining up toys in a fixed order repeatedly", "Changing daily routine without distress", "Enjoying a wide variety of foods"], "correct": 1}, {"id": 93, "q": "Which behavior supports a diagnosis of Autism Spectrum Disorder?", "options": ["Excessive concern about weight", "Repetitive hand flapping", "Persistent elevated mood", "Auditory hallucinations", "Sleepwalking"], "correct": 1}, {"id": 94, "q": "Insistence on sameness is reflected by:", "options": ["Frequent mood swings", "Resistance to changes in routine", "Excessive sleepiness", "Increased appetite", "Flight of ideas"], "correct": 1}, {"id": 95, "q": "Restricted interests in Autism Spectrum Disorder are typically:", "options": ["Broad and flexible", "Intense and highly focused", "Always absent", "Related only to sports", "Limited to adolescence"], "correct": 1}, {"id": 96, "q": "Which symptom belongs to the restricted and repetitive behavior domain?", "options": ["Delusion of persecution", "Stereotyped movements", "Depressed mood", "Panic attacks", "Dissociation"], "correct": 1}, {"id": 97, "q": "Which of the following is NOT a sign of autism in young children?", "options": ["Not responding to their name by 12 months", "Avoiding eye contact", "Pretend play (e.g., feeding a doll) by 18 months", "Delayed speech development"], "correct": 2}, {"id": 98, "q": "Which professional is most qualified to diagnose autism?", "options": ["General physician", "Dentist", "Developmental pediatrician or child psychologist", "Physical therapist"], "correct": 2}, {"id": 99, "q": "Is there a cure for Autism Spectrum Disorder?", "options": ["Yes, with medication", "Yes, with behavioral therapy", "No, but early intervention can help development", "No, and no treatments are available"], "correct": 2}, {"id": 100, "q": "Many individuals with autism have:", "options": ["Below average intelligence in all cases", "Superior athletic ability", "Strengths such as pattern recognition or attention to detail", "No sensory sensitivities"], "correct": 2}]}, {"id": "disorders-with-stress-ptsd-asd-adjustment", "name": "Disorders With Stress (PTSD, ASD, Adjustment)", "icon": "😰", "questions": [{"id": 101, "q": "Post-traumatic stress disorder (PTSD) develops after exposure to:", "options": ["A routine daily event", "A traumatic event", "Mild academic stress", "Sleep deprivation only", "Normal aging"], "correct": 1}, {"id": 102, "q": "What is the main feature of PTSD?", "options": ["Re-experiencing trauma", "Fear of open spaces", "Obsessive hand washing", "Loss of appetite only"], "correct": 0}, {"id": 103, "q": "A core feature of PTSD is:", "options": ["Persistent euphoria", "Re-experiencing the traumatic event", "Progressive memory loss", "Delusions only", "Hyperactivity"], "correct": 1}, {"id": 104, "q": "Flashbacks and nightmares are core symptoms of:", "options": ["Panic Disorder", "PTSD", "OCD", "Major Depressive Disorder"], "correct": 1}, {"id": 105, "q": "Which symptom represents intrusion in PTSD?", "options": ["Flashbacks", "Elevated mood", "Flight of ideas", "Grandiosity", "Compulsive hand washing"], "correct": 0}, {"id": 106, "q": "Nightmares related to trauma are classified as:", "options": ["Dissociative symptoms", "Intrusion symptoms", "Delusions", "Negative symptoms", "Obsessions"], "correct": 1}, {"id": 107, "q": "A patient avoiding reminders of a traumatic event demonstrates:", "options": ["Avoidance behavior", "Catatonia", "Mania", "Somatization", "Dissociation only"], "correct": 0}, {"id": 108, "q": "Which symptom is commonly associated with hyperarousal in PTSD?", "options": ["Increased need for sleep", "Hypervigilance", "Bradykinesia", "Aphasia", "Euphoria"], "correct": 1}, {"id": 109, "q": "Hypervigilance and exaggerated startle response fall under which PTSD cluster?", "options": ["Intrusion", "Avoidance", "Alterations in arousal and reactivity", "Negative mood"], "correct": 2}, {"id": 110, "q": "Which is NOT a DSM-5 criterion cluster for PTSD?", "options": ["Intrusion", "Avoidance", "Negative alterations in cognition", "Hallucinations"], "correct": 3}, {"id": 111, "q": "For PTSD, symptoms must persist for more than:", "options": ["24 hours", "3 days", "1 week", "1 month", "6 months"], "correct": 3}, {"id": 112, "q": "Which age group is most prevalent for PTSD?", "options": ["Children", "Adolescents", "young adults", "Elderly"], "correct": 2}, {"id": 113, "q": "A common First-line treatment for PTSD is:", "options": ["ECT", "Trauma-focused CBT", "Lithium", "Anticholinergics"], "correct": 1}, {"id": 114, "q": "Which disorder is linked to a recent traumatic event?", "options": ["Acute Stress Disorder", "Obsessive Compulsive Disorder", "Schizophrenia", "Eating Disorder"], "correct": 0}, {"id": 115, "q": "Acute Stress Disorder differs from PTSD mainly in:", "options": ["The type of trauma", "The duration of symptoms", "The need for medication", "The age of onset"], "correct": 1}, {"id": 116, "q": "Acute Stress Disorder differs from PTSD mainly by:", "options": ["Age of onset", "Shorter symptom duration", "Presence of psychosis", "Better memory", "Absence of anxiety"], "correct": 1}, {"id": 117, "q": "If symptoms are resolved quickly after trauma, the most likely diagnosis is:", "options": ["PTSD", "Acute Stress Disorder", "Normal stress response", "Adjustment Disorder"], "correct": 2}, {"id": 118, "q": "In Adjustment Disorder, the stressor is:", "options": ["Life-threatening trauma only", "Any identifiable psychosocial stressor", "Childhood abuse only", "No stressor needed"], "correct": 1}, {"id": 119, "q": "Adjustment disorder occurs after:", "options": ["Severe head injury only", "An identifiable life stressor", "Brain infection", "Epilepsy", "Dementia"], "correct": 1}, {"id": 120, "q": "Symptoms of adjustment disorder are usually:", "options": ["Disproportionate to the stressor", "Unrelated to any event", "Always psychotic", "Lifelong", "Present since birth"], "correct": 0}]}, {"id": "depression", "name": "Depression", "icon": "🎭", "questions": [{"id": 121, "q": "Depression is primarily classified as a:", "options": ["Personality disorder", "Mood disorder", "Psychotic disorder", "Anxiety disorder"], "correct": 1}, {"id": 122, "q": "The core symptom of major depressive disorder is:", "options": ["Elevated mood", "Persistent depressed mood", "Excessive energy", "Hallucinations", "Euphoria"], "correct": 1}, {"id": 123, "q": "Another cardinal symptom of depression is:", "options": ["Increased appetite in all patients", "Loss of interest or pleasure", "Hyperactivity", "Grandiosity", "Flight of ideas"], "correct": 1}, {"id": 124, "q": "The minimum duration for diagnosis of major depression is:", "options": ["2 days", "1 week", "2 weeks", "1 month"], "correct": 2}, {"id": 125, "q": "For a diagnosis of major depression, symptoms should persist for at least:", "options": ["2 days", "1 week", "2 weeks", "1 month", "6 months"], "correct": 2}, {"id": 126, "q": "Which neurotransmitter is commonly associated with depression?", "options": ["Dopamine", "Serotonin", "Histamine", "Acetylcholine"], "correct": 1}, {"id": 127, "q": "One of the biological symptoms of depression is:", "options": ["Increased appetite in all cases", "Sleep disturbance", "Excessive talking", "Hallucinations"], "correct": 1}, {"id": 128, "q": "Which sleep disturbance is commonly associated with depression?", "options": ["Narcolepsy", "Insomnia", "Sleepwalking", "Cataplexy", "Night terrors"], "correct": 1}, {"id": 129, "q": "Which of the following is not a common symptom of depression?", "options": ["Persistent sadness", "Increased appetite", "Loss of interest in activities", "Fatigue and decreased energy"], "correct": 1}, {"id": 130, "q": "Which appetite change may occur in depression?", "options": ["Appetite is always increased", "Appetite is always normal", "Appetite may decrease or increase", "Appetite is unaffected", "Appetite increases only at night"], "correct": 2}, {"id": 131, "q": "Which symptom reflects altered psychomotor activity in depression?", "options": ["Psychomotor agitation or retardation", "Chorea", "Tremor only", "Seizures", "Ataxia"], "correct": 0}, {"id": 132, "q": "Fatigue in depression is best described as:", "options": ["Increased physical energy", "Loss of energy nearly every day", "Muscle weakness only", "Exercise intolerance only", "Temporary Eredness afer activity"], "correct": 1}, {"id": 133, "q": "A cognitive symptom of depression is:", "options": ["Increased confidence", "Poor concentration", "Hyperactivity", "Euphoria"], "correct": 1}, {"id": 134, "q": "A patient with depression may experience:", "options": ["Increased concentration", "Poor concentration", "Hyper alertness", "Rapid thinking", "Improved memory"], "correct": 1}, {"id": 135, "q": "Feelings of excessive guilt are considered a:", "options": ["Cognitive symptom", "Motor symptom", "Sensory symptom", "Neurological sign", "Sleep disorder"], "correct": 0}, {"id": 136, "q": "Suicidal thoughts in depression are considered:", "options": ["Normal behavior", "A serious warning sign", "Rarely important", "Always attention-seeking"], "correct": 1}, {"id": 137, "q": "Recurrent thoughts of death in depression should always prompt assessment for:", "options": ["Dementia", "Suicide risk", "Delirium", "Personality disorder", "ADHD"], "correct": 1}, {"id": 138, "q": "First-line treatment for depression is:", "options": ["Antibiotics", "SSRIs", "Antipsychotics", "Benzodiazepines"], "correct": 1}, {"id": 139, "q": "Severe depression with suicidal ideation may require:", "options": ["Home rest only", "Hospital admission", "No treatment", "Vitamins only"], "correct": 1}, {"id": 140, "q": "Electro-Convulsive Therapy (ECT) is mainly indicated in:", "options": ["Mild depression", "Severe resistant depression", "Simple anxiety", "Insomnia"], "correct": 1}]}, {"id": "bipolar-disorder", "name": "Bipolar Disorder", "icon": "💊", "questions": [{"id": 141, "q": "A 25-year-old man presents with a one-week history of elevated mood, decreased need for sleep, increased talkativeness, and excessive spending. He has significant impairment in social functioning. Which of the following is the most likely diagnosis?", "options": ["Cyclothymic disorder", "Hypomanic episode", "Manic episode", "Major depressive disorder"], "correct": 2}, {"id": 142, "q": "What is the minimum duration required for a manic episode according to DSM-V?", "options": ["4 days", "1 week", "2 weeks", "1 month", "6 months"], "correct": 1}, {"id": 143, "q": "What is the minimum duration required for a hypomanic episode?", "options": ["4 days", "1 week", "2 weeks", "1 month", "6 months"], "correct": 0}, {"id": 144, "q": "Which of the following features helps distinguish mania from hypomania?", "options": ["Presence of elevated mood", "Increased energy", "Presence of marked functional impairment or psychosis", "Decreased need for sleep"], "correct": 2}, {"id": 145, "q": "Which of the following distinguishes a manic episode from a hypomanic episode?", "options": ["Duration is shorter in mania", "Mania does not require hospitalization", "Hypomania may have psychotic features", "Mania causes severe impairment or requires hospitalization", "Hypomania lasts for at least one week"], "correct": 3}, {"id": 146, "q": "A 30-year-old woman with bipolar disorder presents with depressed mood alternating with episodes of mania. Which type of bipolar disorder is most likely?", "options": ["Bipolar I disorder", "Bipolar II disorder", "Cyclothymic disorder", "Persistent depressive disorder"], "correct": 0}, {"id": 147, "q": "Bipolar II disorder is characterized by episodes of major depression and which of the following?", "options": ["Mania only", "Mixed episodes only", "Hypomania", "Cyclothymia", "Psychotic features only"], "correct": 2}, {"id": 148, "q": "A mixed affective episode in bipolar disorder is characterized by:", "options": ["Only depressive symptoms", "Only manic symptoms", "Symptoms of both mania and depression occurring simultaneously", "Absence of any mood symptoms", "Symptoms of anxiety only"], "correct": 2}, {"id": 149, "q": "In bipolar disorder, which of the following cognitive symptoms is commonly seen during mania?", "options": ["Low self-esteem", "Flight of ideas", "Difficulty concentrating only", "Memory loss", "Slowed thinking"], "correct": 1}, {"id": 150, "q": "Which neurotransmitter abnormality is most commonly associated with bipolar disorder?", "options": ["Decreased dopamine activity only", "Increased dopamine and norepinephrine activity", "Decreased serotonin only", "Increased GABA activity"], "correct": 1}, {"id": 151, "q": "Which of the following statements about bipolar disorder is TRUE?", "options": ["Bipolar II disorder includes full manic episodes", "Mania must last at least one month for diagnosis", "Bipolar disorder has a strong genetic association", "Depression never occurs in bipolar disorder"], "correct": 2}, {"id": 152, "q": "What is the approximate average age of onset for bipolar illness?", "options": ["Early teens", "Mid to late twenties", "Mid-thirties", "Early forties", "Afer age 50"], "correct": 1}, {"id": 153, "q": "Which of the following is considered a First-line mood stabilizer in bipolar disorder?", "options": ["Diazepam", "Lithium", "Sertraline", "Chlorpromazine"], "correct": 1}, {"id": 154, "q": "What is the First-line pharmacological treatment for acute manic episodes?", "options": ["SSRIs", "Benzodiazepines", "Mood stabilizers (e.g., Lithium).", "Tricyclic antidepressants", "MAOIs"], "correct": 2}, {"id": 155, "q": "Which anticonvulsant medication is used as a mood stabilizer in bipolar disorder?", "options": ["Fluoxetine", "Valproic acid", "Clomipramine", "Diazepam", "Propranolol"], "correct": 1}, {"id": 156, "q": "A patient with bipolar disorder develops tremors, polyuria, and hypothyroidism during treatment. Which drug is the most likely cause?", "options": ["Fluoxetine", "Haloperidol", "Lithium", "Alprazolam"], "correct": 2}, {"id": 157, "q": "Which adverse effect is specifically associated with Lithium carbonate therapy?", "options": ["Weight loss", "Hypothyroidism", "Hypertension", "Hyperglycemia", "Insomnia"], "correct": 1}, {"id": 158, "q": "A patient treated with lithium develops toxicity. Which serum lithium level is most likely associated with severe toxicity?", "options": ["0.4 mtiq/L", "0.8 mtiq/L", "1.0 mtiq/L", ">2.0 mtiq/L"], "correct": 3}, {"id": 159, "q": "Which of the following medications may precipitate mania in a patient with bipolar disorder?", "options": ["Antidepressants", "Antacids", "Antihistamines", "Proton pump inhibitors"], "correct": 0}, {"id": 160, "q": "A patient with bipolar disorder is brought to the emergency department with severe agitation and aggressive behavior during a manic episode. What is the most appropriate immediate management?", "options": ["Psychoanalysis", "Antidepressant monotherapy", "Hospitalization and mood stabilizer/antipsychotic treatment", "Observation only"], "correct": 2}]}, {"id": "anxiety-disorders-general", "name": "Anxiety Disorders (General)", "icon": "🛌", "questions": [{"id": 161, "q": "1. Which neurotransmitter is most commonly associated with anxiety disorders?", "options": ["Dopamine", "Serotonin", "Histamine", "Acetylcholine"], "correct": 1}, {"id": 162, "q": "3. Generalized anxiety disorder (GAD) is characterized by excessive anxiety lasting for at least:", "options": ["1 week", "1 month", "6 months", "2 years"], "correct": 2}, {"id": 163, "q": "2. A patient experiences sudden episodes of intense fear with palpitations, sweating, and shortness of breath. The most likely diagnosis is:", "options": ["Panic disorder", "Schizophrenia", "Bipolar disorder", "Dementia"], "correct": 0}, {"id": 164, "q": "10. Which statement about panic attacks is TRUE?", "options": ["They always occur during sleep", "They may occur unexpectedly", "They last several days continuously", "They are caused only by cardiac disease"], "correct": 1}, {"id": 165, "q": "6. A patient avoids social situations due to fear of embarrassment. This is most consistent with:", "options": ["Panic disorder", "Obsessive-compulsive disorder", "Social anxiety disorder", "Delirium"], "correct": 2}, {"id": 166, "q": "8. Obsessions in obsessive-compulsive disorder (OCD) are:", "options": ["Voluntary pleasant thoughts", "Intrusive unwanted thoughts", "Loss of consciousness", "False memories only"], "correct": 1}, {"id": 167, "q": "9. A patient repeatedly washes his hands due to fear of contamination despite knowing the fear is excessive. This behavior is called:", "options": ["Delusion", "Compulsion", "Hallucination", "Phobia"], "correct": 1}, {"id": 168, "q": "7. Which physical symptom is commonly associated with anxiety?", "options": ["Bradycardia", "Tremor", "Hypothermia", "Paralysis"], "correct": 1}, {"id": 169, "q": "4. Which medication is commonly used for acute anxiety symptoms?", "options": ["Diazepam", "Lithium", "Haloperidol", "Carbamazepine"], "correct": 0}, {"id": 170, "q": "5. Which psychotherapy is considered First-line treatment for many anxiety disorders?", "options": ["Electroconvulsive therapy", "Cognitive behavioral therapy", "Psychoanalysis only", "Sleep therapy"], "correct": 1}]}, {"id": "panic-disorder", "name": "Panic Disorder", "icon": "🔍", "questions": [{"id": 171, "q": "A patient suddenly develops palpitations, sweating, trembling, and fear of dying for 15 minutes. What is the most likely diagnosis?", "options": ["Major depressive disorder", "Panic attack", "Schizophrenia", "OCD"], "correct": 1}, {"id": 172, "q": "Which symptom is commonly seen during a panic attack?", "options": ["Bradycardia", "Chest Eghtness", "Jaundice", "Hematuria"], "correct": 1}, {"id": 173, "q": "Panic attacks usually reach peak intensity within:", "options": ["Few seconds to minutes", "24 hours", "One week", "One month"], "correct": 0}, {"id": 174, "q": "How long does it typically take for panic attack symptoms to reach peak intensity?", "options": ["Less than 1 minute", "Within 5 minutes", "Within 10 minutes", "Within 30 minutes", "Within 60 minutes"], "correct": 2}, {"id": 175, "q": "Which type of panic attack occurs unexpectedly without warning?", "options": ["Cued panic attack", "Situational panic attack", "Uncued panic attack", "Nocturnal panic attack", "Situationally predisposed panic attack"], "correct": 2}, {"id": 176, "q": "Panic disorder is diagnosed when panic attacks are:", "options": ["Always triggered by trauma", "Unexpected and recurrent", "Only during sleep", "Due to substance use only"], "correct": 1}, {"id": 177, "q": "What is the minimum duration of concern about future attacks required for panic disorder diagnosis?", "options": ["1 week", "2 weeks", "1 month", "3 months", "6 months"], "correct": 2}, {"id": 178, "q": "Which age group most commonly develops panic disorder?", "options": ["Childhood", "Elderly", "Young adults", "Neonates"], "correct": 2}, {"id": 179, "q": "What percentage of people will experience a single panic attack in their lifetime?", "options": ["5%", "10%", "15%", "25%", "50%"], "correct": 3}, {"id": 180, "q": "Which neurotransmitter is most commonly linked to panic disorder?", "options": ["Dopamine", "Acetylcholine", "Serotonin", "Histamine"], "correct": 2}, {"id": 181, "q": "Which brain structure is a major source of norepinephrine and linked to panic disorder?", "options": ["Hypothalamus", "Amygdala", "Hippocampus", "Locus coeruleus", "Thalamus"], "correct": 3}, {"id": 182, "q": "What is the approximate heritability rate for panic disorder based on twin studies?", "options": ["10-15%", "20-30%", "About 50%", "70-80%", "100%"], "correct": 2}, {"id": 183, "q": "Which gene polymorphism is associated with an increased risk of panic disorder?", "options": ["COMT gene", "NPSR1 gene", "MAOA gene", "SLC6A4 gene", "BDNF gene"], "correct": 1}, {"id": 184, "q": "The Anxiety Sensitivity Index is used to predict the development of which disorder?", "options": ["Depression", "Panic disorder", "Generalized anxiety disorder", "Specific phobia", "Social anxiety disorder"], "correct": 1}, {"id": 185, "q": "Which physical disease should be excluded before diagnosing panic disorder?", "options": ["Hyperthyroidism", "Osteoarthritis", "Cataract", "Psoriasis"], "correct": 0}, {"id": 186, "q": "A patient avoids crowded places due to fear of panic attacks. This is called:", "options": ["Agoraphobia", "Claustrophobia", "Delirium", "Mania"], "correct": 0}, {"id": 187, "q": "Which of the following is considered First-line treatment for panic disorder?", "options": ["SSRIs", "Antibiotics", "Antipsychotics only", "Steroids"], "correct": 0}, {"id": 188, "q": "Which psychological therapy is useful in panic disorder?", "options": ["CBT", "Psychoanalysis only", "Electroconvulsive therapy", "Hypnosis only"], "correct": 0}, {"id": 189, "q": "Panic Control Therapy primarily involves exposure to:", "options": ["Traumatic memories", "Somatic sensations associated with panic", "Social situations", "Specific objects", "Past life events"], "correct": 1}, {"id": 190, "q": "The \"fear-of-fear\" hypothesis relates to expectations about:", "options": ["Physical illness", "Public panic attacks", "Social rejection", "Financial loss", "Career failure"], "correct": 1}]}, {"id": "specific-phobia-social-anxiety-disorder", "name": "Specific Phobia & Social Anxiety Disorder", "icon": "😱", "questions": [{"id": 191, "q": "According to the Yerkes-Dodson curve, which level of anxiety improves performance?", "options": ["Absence of anxiety", "Low anxiety", "Moderate anxiety", "High anxiety", "Very high anxiety"], "correct": 2}, {"id": 192, "q": "Specific phobia is characterized by:", "options": ["Fear of all social situations", "Persistent irrational fear of a specific object or situation", "Mood elevation", "Memory impairment"], "correct": 1}, {"id": 193, "q": "Which statement about specific phobia is TRUE?", "options": ["Patients recognize that the fear is excessive", "It always causes psychosis", "It is associated with dementia", "It occurs only in children"], "correct": 0}, {"id": 194, "q": "Which physical symptom is commonly seen during phobic anxiety?", "options": ["Bradycardia", "Sweating and palpitations", "Paralysis", "Jaundice"], "correct": 1}, {"id": 195, "q": "Which type of specific phobia is associated with fainting and heart rate slowing?", "options": ["Animal phobia", "Natural environment phobia", "Situational phobia", "Blood-injection-injury phobia"], "correct": 3}, {"id": 196, "q": "A patient has intense fear whenever he sees blood and avoids hospitals. The most likely diagnosis is:", "options": ["Panic disorder", "Specific phobia", "Schizophrenia", "Obsessive-compulsive disorder"], "correct": 1}, {"id": 197, "q": "A patient with arachnophobia is afraid of:", "options": ["Dogs", "Spiders", "Heights", "Water"], "correct": 1}, {"id": 198, "q": "The First-line psychotherapy for specific phobia is:", "options": ["Electroconvulsive therapy", "Exposure therapy", "Psychoanalysis only", "Sleep therapy"], "correct": 1}, {"id": 199, "q": "Social anxiety disorder is mainly characterized by fear of:", "options": ["Open spaces", "Being negatively evaluated by others", "Dark places", "Losing memory"], "correct": 1}, {"id": 200, "q": "What is the hallmark physical response associated with Social Anxiety Disorder?", "options": ["Increased appetite", "Hypersomnia", "Blushing", "Tremor only", "Pallor"], "correct": 2}, {"id": 201, "q": "The \"performance only\" specifier for Social Anxiety Disorder applies when fear is restricted to:", "options": ["All social interactions", "Eating or drinking in public", "Speaking or performing in public", "Meeting unfamiliar people", "Being observed while working"], "correct": 2}, {"id": 202, "q": "What is the minimum duration of symptoms required for a diagnosis of Social Anxiety Disorder?", "options": ["1 month", "3 months", "6 months", "12 months", "24 months"], "correct": 2}, {"id": 203, "q": "A university student avoids presentations because of fear of embarrassment and criticism. This is most consistent with:", "options": ["Specific phobia", "Social anxiety disorder", "Delirium", "Bipolar disorder"], "correct": 1}, {"id": 204, "q": "What is the median age of onset for Social Anxiety Disorder in the United States?", "options": ["8 years", "13 years", "18 years", "22 years", "30 years"], "correct": 1}, {"id": 205, "q": "First-degree relatives of individuals with Social Anxiety Disorder have how many times greater chance of having SAD?", "options": ["1-2 Emes", "2-6 Emes", "10-15 Emes", "20-30 Emes", "50 Emes"], "correct": 1}, {"id": 206, "q": "Which of the following is a culturally specific anxiety syndrome?", "options": ["Koro", "Taijin kyofusho", "Windigo psychosis", "Amok", "Pibloktoq"], "correct": 1}, {"id": 207, "q": "Approximately what percentage of individuals with an anxiety disorder also meet criteria for depression?", "options": ["20%", "40%", "60%", "80%", "100%"], "correct": 2}, {"id": 208, "q": "Which medication class is commonly used in social anxiety disorder?", "options": ["SSRIs", "Antibiotics", "Mood stabilizers", "Anticonvulsants only"], "correct": 0}, {"id": 209, "q": "The best management approach for social anxiety disorder often includes:", "options": ["CBT and SSRIs", "Isolation", "Antipsychotics only", "Electroconvulsive therapy"], "correct": 0}, {"id": 210, "q": "Which treatment is considered most effective for Social Anxiety Disorder?", "options": ["Aversion therapy", "Cognitive therapy (Clark's method)", "Psychoanalysis", "Hypnotherapy"], "correct": 1}]}, {"id": "sexual-deviations-paraphilias", "name": "Sexual Deviations (Paraphilias)", "icon": "🧬", "questions": [{"id": 211, "q": "Which phase of the human sexual response cycle is characterized by rhythmic contractions at the base of the penis resulting in ejaculation for men?", "options": ["Excitement", "Plateau", "Orgasm", "Resolution"], "correct": 2}, {"id": 212, "q": "According to epidemiological data, what is the most common sexual disorder in men?", "options": ["Sadism", "Male Hypoactive Sexual Desire Disorder", "Erectile Disorder", "Priapism"], "correct": 2}, {"id": 213, "q": "According to the lecture, what percentage of men aged 66-74 report problems with sexual desire?", "options": ["6%", "15%", "25%", "40%", "75%"], "correct": 3}, {"id": 214, "q": "What category represents the most common cause of erectile dysfunction in young and middle-aged men?", "options": ["Endocrine factors (such as Diabetes Mellitus)", "Psychological factors (such as performance anxiety and stress)", "Vascular factors (such as atherosclerosis)", "Iatrogenic drug side effects"], "correct": 1}, {"id": 215, "q": "A 45-year-old man reports difficulty maintaining an erection during sexual activity for the past 8 months, causing significant distress. What is the most likely diagnosis?", "options": ["Male hypoactive sexual desire disorder", "Premature ejaculation", "Erectile disorder", "Delayed ejaculation"], "correct": 2}, {"id": 216, "q": "According to DSM-5, sexual dysfunctions must persist for a minimum duration of:", "options": ["2 weeks", "1 month", "3 months", "6 months"], "correct": 3}, {"id": 217, "q": "Which of the following is one of the pharmacological treatment in premature ejaculation?", "options": ["Concor", "Systematic desensitization", "SSRIs", "Alprostadil"], "correct": 2}, {"id": 218, "q": "Which of the following is characterized by an involuntary spasm of the lower third of the vagina interfering with coitus?", "options": ["Dyspareunia", "Vaginismus", "Female orgasmic disorder", "Female sexual interest/arousal disorder", "Genito-pelvic pain disorder"], "correct": 1}, {"id": 219, "q": "A woman has never experienced orgasm by any kind of stimulation throughout her life) This is best described as:", "options": ["Acquired female orgasmic disorder", "Situational female orgasmic disorder", "Lifelong female orgasmic disorder", "Generalized female orgasmic disorder", "Hypoactive sexual desire disorder"], "correct": 2}, {"id": 220, "q": "Which term describes the condition of a person who becomes sexually aroused by dressing in clothes typically worn by the opposite sex?", "options": ["Transvestism", "Fetishism", "Sadism", "Voyeurism"], "correct": 0}, {"id": 221, "q": "A male patient experiences sexual arousal from wearing women's clothing but has no desire for permanent sex change or sexual excitement from the clothing itself. What is the most likely diagnosis?", "options": ["Transvestic disorder with fetishism", "Dual-role transvestism", "Transexualism", "Gender identity disorder", "Fetishism"], "correct": 1}, {"id": 222, "q": "Sexual attraction toward prepubescent children is known as:", "options": ["Pedophilia", "Normal sex behavior", "Fetishism", "Exhibitionism"], "correct": 0}, {"id": 223, "q": "Which of the following is characterized by recurrent intense sexual urges toward children aged 13 years or younger for at least 6 months?", "options": ["Frotteurism", "Exhibitionism", "Voyeurism", "Pedophilia", "Sexual sadism"], "correct": 3}, {"id": 224, "q": "Sexual pleasure from secretly watching unsuspecting naked people is called:", "options": ["Voyeurism", "Normal sex behavior", "Fetishism", "Zoophilia"], "correct": 0}, {"id": 225, "q": "Which paraphilia involves recurrent urges to expose one's genitals to unsuspecting strangers?", "options": ["Voyeurism", "Exhibitionism", "Frotteurism", "Fetishism", "Pedophilia"], "correct": 1}, {"id": 226, "q": "Which paraphilia involves rubbing one's genitals against a non-consenting person, typically in crowded places?", "options": ["Voyeurism", "Exhibitionism", "Frotteurism", "Sexual masochism", "Pedophilia"], "correct": 2}, {"id": 227, "q": "What is Masochism?", "options": ["Deriving pleasure from watching others", "Deriving pleasure from pain inflicted on oneself", "Deriving pleasure from exposing oneself", "Deriving pleasure from inanimate objects"], "correct": 1}, {"id": 228, "q": "What is Necrophilia?", "options": ["Sexual attraction to animals", "Sexual attraction to dead bodies", "Sexual attraction to childrend", "Sexual attraction to objects"], "correct": 1}, {"id": 229, "q": "Sexual arousal involving animals is called:", "options": ["Zoophilia", "Normal sex behavior", "Necrophilia", "Exhibitionism"], "correct": 0}, {"id": 230, "q": "Primary transexualism is characterized by all of the following EXCEPT:", "options": ["Early childhood onset", "Homogeneous category", "Later onset", "Diagnosis made afer puberty", "Persistent discomfort with one's anatomic sex"], "correct": 2}]}, {"id": "sleep-disorders", "name": "Sleep Disorders", "icon": "🍽️", "questions": [{"id": 231, "q": "physiologic, recurrent, reversible behavioral state of perceptual disengagement from and unresponsiveness to the environment the previous statement refers to", "options": ["coma", "sleep", "death", "fatigue"], "correct": 1}, {"id": 232, "q": "The time a person takes to reach REM sleep from non-REM is called The previous statement refers to", "options": ["normal behavior", "REM latency", "nightmares", "narcolepsy"], "correct": 1}, {"id": 233, "q": "K-complex present in which of the following", "options": ["Stage N2", "stage N1", "REM sleep", "stage N3"], "correct": 0}, {"id": 234, "q": "Which sleep stage is characterized by the presence of sleep spindles and K- complexes?", "options": ["Stage 1 NREM", "Stage 2 NREM", "Stage 3 NREM", "Stage 4 NREM", "REM sleep"], "correct": 1}, {"id": 235, "q": "Atonia occurs in which stage of sleep", "options": ["REM sleep", "stage N1", "stage N2", "stage N3"], "correct": 0}, {"id": 236, "q": "Which of the following is a characteristic finding during REM sleep?", "options": ["High-voltage delta waves", "Muscle atonia (paralysis)", "Slow heart rate", "Increased airway resistance", "Regulated body temperature"], "correct": 1}, {"id": 237, "q": "What percentage of total sleep time does REM sleep normally constitute?", "options": ["5-10%", "10-15%", "20-25%", "35-40%", "45-50%"], "correct": 2}, {"id": 238, "q": "which is true about sleep terror disorder", "options": ["Occurs during REM sleep", "Has memory of the arrousal episode", "Occurs during stage N3", "Less common in children"], "correct": 2}, {"id": 239, "q": "Nightmares can be differentiated from sleep terror disorder", "options": ["sleep terror disorder can be recalled", "Nightmares associated with confusion", "Nightmares occur in REM sleep", "both can be recalled"], "correct": 2}, {"id": 240, "q": "Which of the following is a key distinguishing feature between night terrors and nightmares?", "options": ["Night terrors occur during REM sleep", "Nightmares occur during the first third of sleep", "Patients recall the content of nightmares but not night terrors", "Night terrors are associated with vivid dream recall", "Nightmares have no autonomic activation"], "correct": 2}, {"id": 241, "q": "Which of the following is a recommended pharmacological treatment for trauma-related nightmares?", "options": ["Diazepam", "Prazosin", "Zolpidem", "Diphenhydramine", "Oxybutynin"], "correct": 1}, {"id": 242, "q": "What is the peak age of prevalence for sleepwalking (somnambulism)?", "options": ["3-5 years", "6-8 years", "10-12 years", "14-16 years", "18-20 years"], "correct": 2}, {"id": 243, "q": "Which medication is commonly associated with inducing sleepwalking episodes, particularly non\u0002benzodiazepine hypnotics?", "options": ["SSRIs", "Beta-blockers", "Zolpidem", "Steroids", "Antibiotics"], "correct": 2}, {"id": 244, "q": "A child who repeatedly refuses to go to sleep and is allowed by parents to stay up late is most likely suffering from which condition?", "options": ["Sleep-onset association disorder", "Limit-setng disorder", "Nocturnal enuresis", "Rhythmic movement disorder", "Night terrors"], "correct": 1}, {"id": 245, "q": "Inability to initiate/sustain sleep with early awakening and inability to get back to sleep The previous statement refers to", "options": ["narcolepsy", "anorexia nervosa", "insomnia", "malingering"], "correct": 2}, {"id": 246, "q": "Which of the following is the First-line treatment for behavioral insomnias of childhood?", "options": ["Benzodiazepines", "Melatonin supplementation", "Behavioral and environmental interventions", "Tricyclic antidepressants", "Antihistamines"], "correct": 2}, {"id": 247, "q": "First line treatment of sleep disorders is", "options": ["bahvioral/environmental/sleep hygiene", "SSRI", "antipsychotics", "SNRI"], "correct": 0}, {"id": 248, "q": "Hypnagogic hallucinations occurs", "options": ["just before awakening", "just before going to sleep", "during REM sleep", "during stage N3"], "correct": 1}, {"id": 249, "q": "Loss of all muscle tone following strong emotional stimulus, such as laughter The previous statement refers to", "options": ["Enuresis", "coma", "cataplexy", "insomnia"], "correct": 2}, {"id": 250, "q": "A child presents with an irresistible urge to move their legs that worsens at rest and improves with movement, occurring primarily in the evening. What is the most likely diagnosis?", "options": ["Periodic limb movement disorder", "Restless leg syndrome", "Rhythmic movement disorder", "Sleep-onset association disorder", "Narcolepsy"], "correct": 1}]}, {"id": "bodily-distress-disorder", "name": "Bodily Distress Disorder", "icon": "👤", "questions": [{"id": 251, "q": "In functional disorders, are the symptoms \"made up\" or \"real\" to the patient?", "options": ["They are real symptoms felt by the patient.", "They are imaginary and the patient is lying.", "The patient does not feel anything at all.", "They only happen when the patient is sleeping."], "correct": 0}, {"id": 252, "q": "What does the term \"Somatic\" refer to in medicine?", "options": ["Only the mind.", "Only the weather.", "Relating to the body.", "Relating to social media."], "correct": 2}, {"id": 253, "q": "Bodily Distress Disorder is primarily characterized by:", "options": ["Hallucinations", "Distressing physical symptoms with excessive concern", "Memory impairment", "Elevated mood", "Delusions"], "correct": 1}, {"id": 254, "q": "The physical symptoms in Bodily Distress Disorder are:", "options": ["Always intentionally produced", "Associated with disproportionate psychological distress", "Always explained by severe medical disease", "Limited to gastrointestinal complaints", "Always imaginary"], "correct": 1}, {"id": 255, "q": "Patients with Bodily Distress Disorder typically have:", "options": ["No concern about their symptoms", "Excessive thoughts and worries about physical symptoms", "Only neurological deficits", "Persistent euphoria", "Complete loss of consciousness"], "correct": 1}, {"id": 256, "q": "Which feature is commonly seen in Bodily Distress Disorder?", "options": ["Excessive health-related anxiety", "Grandiose delusions", "Flight of ideas", "Visual hallucinations", "Catatonia"], "correct": 0}, {"id": 257, "q": "Patients with Bodily Distress Disorder often:", "options": ["Spend excessive Eme thinking about symptoms", "Ignore all physical symptoms", "Develop dementia", "Become manic", "Experience delirium"], "correct": 0}, {"id": 258, "q": "Does \"Central Sensitization\" mean the brain becomes more sensitive to pain?", "options": ["Yes, the brain amplifies pain signals.", "No, it means the brain stops feeling pain.", "It only relates to the sense of smell.", "It is a type of heart disease."], "correct": 0}, {"id": 259, "q": "When a patient worries too much about having a serious illness but has no symptoms, it is called:", "options": ["High blood pressure.", "Illness Anxiety Disorder.", "A broken leg.", "Healthy lifestyle."], "correct": 1}, {"id": 260, "q": "Which of these can be a \"Trigger\" (starting factor) for a functional disorder?", "options": ["Buying new clothes.", "A stressful life event or a physical injury.", "Reading a book about history.", "Walking in a park."], "correct": 1}, {"id": 261, "q": "A patient repeatedly visits physicians because of persistent bodily complaints despite reassurance) This most likely suggests:", "options": ["Delirium", "Bodily Distress Disorder", "Schizophrenia", "Bipolar disorder", "ADHD"], "correct": 1}, {"id": 262, "q": "Bodily Distress Disorder commonly affects:", "options": ["Daily functioning", "Hearing only", "Vision only", "Kidney function only", "Blood group"], "correct": 0}, {"id": 263, "q": "Diagnosis of Bodily Distress Disorder depends mainly on:", "options": ["Clinical assessment", "Brain biopsy", "EEG findings", "Chest X-ray", "Genetic testing"], "correct": 0}, {"id": 264, "q": "Which simple questionnaire helps doctors check for physical symptoms?", "options": ["PHQ-1", "A math test.", "A driving license exam.", "A cooking recipe."], "correct": 0}, {"id": 265, "q": "Is it helpful to tell an SSD patient \"It is all in your head\"?", "options": ["Yes, it makes them feel better immediately.", "Yes, because it is the truth.", "No, it can damage the trust between doctor and patient.", "No, because it is a surgical term."], "correct": 2}, {"id": 266, "q": "Which statement best describes the patient's response to reassurance?", "options": ["Symptoms disappear permanently", "Reassurance usually provides only temporary relief", "Symptoms immediately resolve", "Reassurance worsens psychosis", "Reassurance causes mania"], "correct": 1}, {"id": 267, "q": "In the BATHE technique, \"Empathy\" means:", "options": ["Giving the patient a lot of money.", "Showing that you understand and care about the patient's feelings.", "Performing a surgery.", "Ordering an X-ray."], "correct": 1}, {"id": 268, "q": "What is the main goal when a doctor sees a patient with many unexplained symptoms?", "options": ["To tell them to stop coming to the clinic.", "To build a good relationship and help manage the symptoms.", "To give them every possible medicine at once.", "To ignore their complaints."], "correct": 1}, {"id": 269, "q": "Which management strategy is recommended for Bodily Distress Disorder?", "options": ["Establishing a consistent therapeutic relationship", "Frequent unnecessary investigations", "Immediate surgery", "Long-term antibiotics", "Isolation from family"], "correct": 0}, {"id": 270, "q": "Doctors should schedule regular visits for these patients to:", "options": ["Charge them more money.", "Waste the patient's Eme.", "Provide support and prevent emergency visits.", "Check their hair color."], "correct": 2}]}, {"id": "obsessive-compulsive-disorder-ocd", "name": "Obsessive-Compulsive Disorder (OCD)", "icon": "🩺", "questions": [{"id": 271, "q": "Obsessive-Compulsive Disorder is characterized by:", "options": ["Delusions and hallucinations", "Obsessions, compulsions, or both", "Memory loss", "Mania", "Delirium"], "correct": 1}, {"id": 272, "q": "An obsession is best defined as:", "options": ["A pleasurable repetitive behavior", "A recurrent intrusive thought, urge, or image", "A false fixed belief", "A visual hallucination", "A sleep disturbance"], "correct": 1}, {"id": 273, "q": "A compulsion is:", "options": ["An involuntary muscle movement", "A repetitive behavior performed to reduce anxiety", "A type of hallucination", "A memory deficit", "An impulsive aggressive act"], "correct": 1}, {"id": 274, "q": "Fear of contamination is an example of:", "options": ["A compulsion", "An obsession", "A panic attack", "A delusion", "An illusion"], "correct": 1}, {"id": 275, "q": "A patient repeatedly washes his hands because of contamination fears. The hand washing is a:", "options": ["Delusion", "Obsession", "Compulsion", "Hallucination", "Phobia"], "correct": 2}, {"id": 276, "q": "Which behavior is commonly associated with OCD?", "options": ["Checking locks repeatedly", "Pressured speech", "Grandiosity", "Flight of ideas", "Visual hallucinations"], "correct": 0}, {"id": 277, "q": "Which of the following is the most common presentation of Obsessive-Compulsive Disorder (OCD) in adults?", "options": ["Pathological doubt (e.g., checking compulsions).", "Symmetry and precision.", "Intrusive sexual thoughts.", "Aggressive obsessions."], "correct": 0}, {"id": 278, "q": "Patients with OCD usually recognize that their symptoms are:", "options": ["Completely normal", "Excessive or unreasonable", "Caused by brain tumors only", "Hallucinations", "Signs of dementia"], "correct": 1}, {"id": 279, "q": "OCD symptoms commonly lead to:", "options": ["Improved daily functioning", "Significant distress and Eme consumption", "Increased physical strength", "Better concentration", "Permanent memory loss"], "correct": 1}, {"id": 280, "q": "To diagnose OCD using DSM-5, the symptoms must be time-consuming, defined as taking more than:", "options": ["> 30 minutes per day.", "> 1 hour per day.", "> 3 hours per day.", "> 10 hours per week."], "correct": 1}, {"id": 281, "q": "what is the gender distribution of OCD in adults?", "options": ["More common in females.", "More common in males.", "No sex differences.", "Exclusively affects females."], "correct": 2}, {"id": 282, "q": "Which of the following is the most common comorbid psychiatric disorder found in patients with OCD?", "options": ["Bipolar Disorder.", "Specific Phobia.", "Major Depressive Disorder (MDD).", "Substance Abuse."], "correct": 2}, {"id": 283, "q": "Which of the following is NOT typically associated with Obsessive-Compulsive Disorder (OCD)?", "options": ["Persistent and intrusive unwanted thoughts.", "Excessive fear of contamination or germs.", "Absence of intrusive thoughts regarding self-harm.", "Repetitive behaviors or mental acts performed in response to an obsession."], "correct": 2}, {"id": 284, "q": "A 10-year-old child presents with sudden, dramatic onset of OCD symptoms and tics following a \"sorethroat.\" The diagnosis is:", "options": ["Early-onset Schizophrenia.", "PANDAS.", "Tourette's Disorder.", "Attention Deficit Hyperactivity Disorder (ADHD)."], "correct": 1}, {"id": 285, "q": "Neuropsychiatric symptoms, including obsessive-compulsive behaviors, have been associated with:", "options": ["Helicobacter pylori infection.", "Hookworm infestation.", "Group A streptococcal infection.", "Giardia lamblia infection."], "correct": 2}, {"id": 286, "q": "During a PET scan of an untreated OCD patient, which of the following findings is most likely?", "options": ["Decreased blood flow to the parietal lobe.", "Increased glucose metabolism in the frontal lobes and caudate nucleus.", "Atrophy of the hippocampus.", "Increased activity in the cerebellum."], "correct": 1}, {"id": 287, "q": "Which of the following is considered a First-line pharmacological treatment for OCD?", "options": ["Diazepam.", "Haloperidol.", "SSRIs (e.g., Fluoxetine, Sertraline).", "Lithium."], "correct": 2}, {"id": 288, "q": "Which medication group is commonly used to treat OCD?", "options": ["SSRIs", "Antibiotics", "Antifungals", "Anticoagulants", "Antihistamines"], "correct": 0}, {"id": 289, "q": "Which psychological treatment is considered First-line for OCD?", "options": ["Cognitive Behavioral Therapy with Exposure and Response Prevention (ERP)", "Electroconvulsive therapy", "Brain surgery", "Occupational therapy only", "Sleep therapy"], "correct": 0}, {"id": 290, "q": "Which of the following is considered the most effective long-term management strategy for Obsessive-Compulsive Disorder (OCD)?", "options": ["Behavioral therapy alone (Exposure and Response Prevention).", "Pharmacotherapy alone (e.g., Selective Serotonin Reuptake Inhibitors).", "Psychosurgery (e.g., Deep Brain Stimulation or Cingulotomy).", "Combined treatment involving both behavioral therapy and pharmacotherapy."], "correct": 3}]}, {"id": "addiction", "name": "Addiction", "icon": "🌊", "questions": [{"id": 291, "q": "Addiction is primarily characterized by:", "options": ["Controlled substance use", "Compulsive substance use despite harmful consequences", "Occasional social drinking only", "Memory loss", "Delirium"], "correct": 1}, {"id": 292, "q": "The main neurotransmitter involved in addiction reward pathway is:", "options": ["Serotonin", "Dopamine", "GABA", "Acetylcholine"], "correct": 1}, {"id": 293, "q": "Craving in addiction refers to:", "options": ["Fear of taking a substance", "A strong desire or urge to use a substance", "Loss of consciousness", "Memory impairment", "Visual hallucinations"], "correct": 1}, {"id": 294, "q": "Tolerance is defined as:", "options": ["Increased sensitivity to small doses", "Needing larger amounts of a substance to achieve the same effect", "Complete avoidance of substances", "Loss of appetite", "Sudden withdrawal symptoms"], "correct": 1}, {"id": 295, "q": "Withdrawal symptoms occur:", "options": ["During intoxication only", "Afer reducing or stopping substance use", "Before the first use", "Only in children", "During sleep"], "correct": 1}, {"id": 296, "q": "Which feature strongly suggests addiction?", "options": ["Controlled occasional use", "Persistent use despite physical or psychological harm", "Normal social functioning", "Improved work performance", "No desire to use the substance"], "correct": 1}, {"id": 297, "q": "A patient repeatedly fails to stop using a substance despite repeated attempts. This indicates:", "options": ["Good self-control", "Impaired control over substance use", "Normal behavior", "Delirium", "Dementia"], "correct": 1}, {"id": 298, "q": "Which behavior is commonly associated with addiction?", "options": ["Spending excessive Eme obtaining or using the substance", "Improved academic performance", "Better concentration", "Reduced craving", "Increased insight"], "correct": 0}, {"id": 299, "q": "A patient says: “I can stop anytime I want.” This defense mechanism is:", "options": ["Projection", "Sublimation", "Denial", "Regression"], "correct": 2}, {"id": 300, "q": "Addiction commonly results in impairment of:", "options": ["Social and occupational functioning", "Hearing only", "Vision only", "Blood group", "Eye color"], "correct": 0}, {"id": 301, "q": "The classic triad of opioid overdose is:", "options": ["Mydriasis + hypertension + agitation", "Pinpoint pupils + respiratory depression + coma", "Tremor + hallucinations + sweating", "Ataxia + diplopia + Ennitus"], "correct": 1}, {"id": 302, "q": "Drug used to reverse opioid overdose:", "options": ["Methadone", "Disulfiram", "Naloxone", "Diazepam"], "correct": 2}, {"id": 303, "q": "Alcohol withdrawal may lead to:", "options": ["Severe constipation", "Delirium tremens", "Hyperthyroidism", "Parkinsonism"], "correct": 1}, {"id": 304, "q": "Which withdrawal state may be life-threatening?", "options": ["Cannabis withdrawal", "Opioid withdrawal", "Alcohol withdrawal", "Cameine withdrawal"], "correct": 2}, {"id": 305, "q": "Wernicke encephalopathy is caused by deficiency of:", "options": ["Vitamin B12", "Vitamin C", "Vitamin B1", "Vitamin D"], "correct": 2}, {"id": 306, "q": "Which medication produces unpleasant reaction with alcohol?", "options": ["Naloxone", "Acamprosate", "Disulfiram", "Fluoxetine"], "correct": 2}, {"id": 307, "q": "Cocaine intoxication commonly causes:", "options": ["Bradycardia", "Hypotension", "CNS depression", "Hypertension"], "correct": 3}, {"id": 308, "q": "Increased appetite and red eyes are commonly seen with:", "options": ["Cocaine", "Cannabis", "Heroin", "LSD"], "correct": 1}, {"id": 309, "q": "Which management principle is important in addiction treatment?", "options": ["Ignoring withdrawal symptoms", "Comprehensive assessment and long-term follow-up", "Immediate discontinuation without support in every patient", "Isolation only", "Surgery"], "correct": 1}, {"id": 310, "q": "Psychological treatment for addiction commonly includes:", "options": ["Behavioral therapy", "Chemotherapy", "Dialysis", "Radiotherapy", "Brain surgery"], "correct": 0}]}, {"id": "neurodevelopmental-disorders", "name": "Neurodevelopmental Disorders", "icon": "☠️", "questions": [{"id": 311, "q": "Neurodevelopmental disorders primarily affect the development of which system?", "options": ["Cardiovascular system", "Nervous system", "Respiratory system", "Musculoskeletal system", "Endocrine system"], "correct": 1}, {"id": 312, "q": "Neurodevelopmental disorders usually begin during:", "options": ["Old age", "Childhood", "Adulthood", "Pregnancy"], "correct": 1}, {"id": 313, "q": "Symptoms of neurodevelopmental disorders typically First appear during which period?", "options": ["Adulthood", "Old age", "Early developmental period", "Menopause", "Late adolescence only"], "correct": 2}, {"id": 314, "q": "Neurodevelopmental disorders most often become apparent before which milestone?", "options": ["Puberty", "Marriage", "School entrance", "Retirement", "Adulthood"], "correct": 2}, {"id": 315, "q": "Neurodevelopmental disorders may result from:", "options": ["Genetic factors only", "Environmental factors only", "Both genetic and environmental factors", "Poor diet only"], "correct": 2}, {"id": 316, "q": "Which of the following is a neurodevelopmental disorder?", "options": ["Schizophrenia", "Depression", "ADHD", "Bipolar disorder"], "correct": 2}, {"id": 317, "q": "ADHD is mainly characterized by:", "options": ["Hallucinations", "Hyperactivity and inattention", "Memory loss", "Delusions"], "correct": 1}, {"id": 318, "q": "Which of the following is common in ADHD?", "options": ["Excessive sleep", "Hyperactivity", "Paralysis", "Mutism"], "correct": 1}, {"id": 319, "q": "Which neurodevelopmental disorder is characterized primarily by inattention, hyperactivity, and impulsivity?", "options": ["Autism Spectrum Disorder", "ADHD", "Dyslexia", "Intellectual disability", "Fragile X syndrome"], "correct": 1}, {"id": 320, "q": "Which of the following is classified as a neurodevelopmental disorder?", "options": ["Schizophrenia", "Autism spectrum disorder", "Bipolar disorder", "Major depressive disorder", "Obsessive-compulsive disorder"], "correct": 1}, {"id": 321, "q": "Autism Spectrum Disorder mainly affects:", "options": ["Kidney function", "Social communication", "Vision", "Hearing only"], "correct": 1}, {"id": 322, "q": "A child with poor eye contact and repetitive behavior may have:", "options": ["Panic disorder", "Autism Spectrum Disorder", "OCD", "Depression"], "correct": 1}, {"id": 323, "q": "Intellectual disability is associated with problems in:", "options": ["Blood pressure", "Learning and adaptive functioning", "Lung function", "Appetite only"], "correct": 1}, {"id": 324, "q": "Intellectual disabilities (IDs), as a category, are grouped under which broader classification?", "options": ["Mood disorders", "Neurodevelopmental disorders", "Personality disorders", "Psychotic disorders", "Anxiety disorders"], "correct": 1}, {"id": 325, "q": "Which genetic condition is specifically classified as a neurodevelopmental disorder in this group?", "options": ["Down syndrome", "Fragile X syndrome", "Turner syndrome", "Klinefelter syndrome"], "correct": 1}, {"id": 326, "q": "Which disorder is characterized by difficulty in reading and writing despite normal intelligence?", "options": ["Dyslexia", "Mania", "Dementia", "Delirium"], "correct": 0}, {"id": 327, "q": "Which learning-related condition is listed as a neurodevelopmental disorder?", "options": ["Dyslexia", "Insomnia", "Delirium", "Dementia"], "correct": 0}, {"id": 328, "q": "Which condition involving language acquisition difficulty falls under neurodevelopmental disorders?", "options": ["Developmental language disorder", "Generalized anxiety disorder", "Conduct disorder", "Panic disorder", "Somatic symptom disorder"], "correct": 0}, {"id": 329, "q": "Which of the following functional domains is commonly impaired by neurodevelopmental disorders?", "options": ["Personal and social functioning", "Cardiac function", "Renal function", "Bone density"], "correct": 0}, {"id": 330, "q": "Early intervention in neurodevelopmental disorders helps to:", "options": ["Worsen symptoms", "Improve development and functioning", "Cause psychosis", "Prevent all diseases"], "correct": 1}]}, {"id": "intellectual-disability", "name": "Intellectual Disability", "icon": "💉", "questions": [{"id": 331, "q": "A child presents with significantly below-average intellectual functioning and deficits in adaptive behavior beginning before age 18. What is the most likely diagnosis?", "options": ["Autism spectrum disorder", "Intellectual disability", "ADHD", "Specific learning disorder"], "correct": 1}, {"id": 332, "q": "A child with intellectual disability has difficulty with communication, self-care, and academic learning. Symptoms started in early childhood. Which diagnostic criterion is essential?", "options": ["Onset afer age 30", "Presence of hallucinations", "Developmental period onset", "History of head trauma only"], "correct": 2}, {"id": 333, "q": "Under DSM-5, what term is used when a child under five cannot yet undergo formal intellectual assessment?", "options": ["Unspecified intellectual disability", "Global developmental delay", "Borderline intellectual functioning", "Developmental language disorder"], "correct": 1}, {"id": 334, "q": "Deficits in adaptive functioning include problems with:", "options": ["Memory only", "Language only", "Social and practical skills", "Vision only"], "correct": 2}, {"id": 335, "q": "Which of the following is NOT one of the DSM-5 adaptive functioning domains assessed in intellectual disability?", "options": ["Conceptual", "Social", "Practical/functional", "Motor"], "correct": 3}, {"id": 336, "q": "Which IQ range is most commonly associated with mild intellectual disability?", "options": ["20–34", "35–49", "50–69", "70–85"], "correct": 2}, {"id": 337, "q": "A patient with intellectual disability is unable to live independently but can perform simple self-care tasks with supervision. This level is most likely:", "options": ["Mild", "Moderate", "Severe", "Profound"], "correct": 1}, {"id": 338, "q": "The most common genetic cause of intellectual disability is:", "options": ["Turner syndrome", "Down syndrome", "Fragile X syndrome", "Klinefelter syndrome"], "correct": 2}, {"id": 339, "q": "Which physical feature is classically associated with Fragile X syndrome?", "options": ["Hepatosplenomegaly", "Cataracts", "Large ears and macroorchidism", "Spina bifida"], "correct": 2}, {"id": 340, "q": "Which diagnostic test is specifically used to identify Fragile X syndrome?", "options": ["Karyotyping alone", "Fragile X DNA/molecular testing", "Muscle biopsy", "MRI", "Skeletal radiograph"], "correct": 1}, {"id": 341, "q": "Which malformation syndrome is characterized by hamartomatous skin nodules, seizures, and bone lesions?", "options": ["Fragile X syndrome", "Tuberous sclerosis", "Trisomy 21", "Neural tube defect", "Galactosemia"], "correct": 1}, {"id": 342, "q": "Which of the following conditions is associated with trisomy 21?", "options": ["Fragile X syndrome", "Phenylketonuria", "Down syndrome", "Rett syndrome"], "correct": 2}, {"id": 343, "q": "A newborn screened positive for phenylketonuria (PKU). Untreated PKU may lead to:", "options": ["Hearing loss", "Congenital heart disease", "Intellectual disability", "Blindness"], "correct": 2}, {"id": 344, "q": "Which condition, if treated early with dietary modification, can prevent mental retardation?", "options": ["Trisomy 21", "Phenylketonuria", "Fragile X syndrome", "Tuberous sclerosis", "Rubella infection"], "correct": 1}, {"id": 345, "q": "Which inborn error of metabolism presents with hepatosplenomegaly and cataracts?", "options": ["Phenylketonuria", "Homocystinuria", "Galactosemia", "Hypoglycemia"], "correct": 2}, {"id": 346, "q": "Which prenatal factor is strongly associated with intellectual disability?", "options": ["Hypertension", "Maternal alcohol consumption", "Appendicitis", "Seasonal allergy"], "correct": 1}, {"id": 347, "q": "Which dietary supplement is associated with reduced risk of neural tube defects?", "options": ["Vitamin B12", "Folic acid", "Iron", "Vitamin D", "Calcium"], "correct": 1}, {"id": 348, "q": "Which prenatal/perinatal insult listed under \"extraordinary extrinsic influence\" can cause mental retardation?", "options": ["Trisomy 21", "Neonatal asphyxia (hypoxia)", "Fragile X mutation", "Galactosemia"], "correct": 1}, {"id": 349, "q": "Which comorbid behavior tends to become more frequent as cognitive disability becomes more severe?", "options": ["Eating disorders", "Mood disorders", "Self-injurious behavior and aggression", "Anxiety disorders", "Psychosis"], "correct": 2}, {"id": 350, "q": "Which of the following is an important part of management for intellectual disability?", "options": ["Long-term isolation", "Behavioral and educational support", "Electroconvulsive therapy", "Antidepressant monotherapy"], "correct": 1}]}, {"id": "feeding-and-eating-disorders", "name": "Feeding and Eating Disorders", "icon": "🧪", "questions": [{"id": 351, "q": "Which factor is classified as a biological risk factor for eating disorders?", "options": ["Weight stigma", "Type 1 diabetes", "Low self-esteem", "Cultural body ideals", "Historical trauma"], "correct": 1}, {"id": 352, "q": "A 19-year-old woman has intense fear of gaining weight, severe food restriction, and a BMI of 16 kg/m². What is the most likely diagnosis?", "options": ["Bulimia nervosa", "Binge eating disorder", "Anorexia nervosa", "Avoidant personality disorder"], "correct": 2}, {"id": 353, "q": "In anorexia nervosa, a BMI of 15–15.99 kg/m² is classified as which severity level?", "options": ["Mild", "Moderate", "Severe", "Extreme"], "correct": 2}, {"id": 354, "q": "Which of the following physical findings is commonly seen in anorexia nervosa?", "options": ["Obesity", "Lanugo hair", "Exophthalmos", "Hepatomegaly"], "correct": 1}, {"id": 355, "q": "Which treatment approach is considered most effective for adolescent anorexia nervosa?", "options": ["Individual psychodynamic therapy alone", "Family-based therapy", "Antipsychotic medication alone", "Inpatient-only care", "Group therapy exclusively"], "correct": 1}, {"id": 356, "q": "Approximately what percentage of anorexia nervosa patients achieve full recovery?", "options": ["10%", "20%", "40%", "60%", "80%"], "correct": 2}, {"id": 357, "q": "A patient experiences recurrent binge eating episodes followed by self-induced vomiting and excessive exercise. Body weight is normal. What is the most likely diagnosis?", "options": ["Anorexia nervosa", "Bulimia nervosa", "Binge eating disorder", "Pica"], "correct": 1}, {"id": 358, "q": "Which electrolyte abnormality is commonly associated with repeated vomiting in bulimia nervosa?", "options": ["Hyperkalemia", "Hypokalemia", "Hypercalcemia", "Hyponatremia"], "correct": 1}, {"id": 359, "q": "Which of the following is most associated with dental enamel erosion?", "options": ["Anorexia nervosa only", "Bulimia nervosa", "Pica", "Rumination disorder without vomiting"], "correct": 1}, {"id": 360, "q": "How often must binge eating and compensatory behaviors occur to diagnose bulimia nervosa?", "options": ["Daily for one month", "At least once weekly for 3 months", "Twice weekly for 6 months", "Once monthly for a year", "Continuously for 2 weeks"], "correct": 1}, {"id": 361, "q": "Which antidepressant is FDA-approved for treatment of bulimia nervosa?", "options": ["Fluoxetine", "Lithium", "Haloperidol", "Diazepam"], "correct": 0}, {"id": 362, "q": "Fluoxetine at 60 mg is most associated with pharmacological treatment of which disorder?", "options": ["Anorexia nervosa", "Pica", "Bulimia nervosa", "Rumination disorder"], "correct": 2}, {"id": 363, "q": "Binge eating disorder differs from bulimia nervosa because it:", "options": ["Occurs only in children", "Includes psychosis", "Lacks compensatory behaviors", "Always causes severe underweight"], "correct": 2}, {"id": 364, "q": "Which eating disorder is characterized by binge eating without compensatory behaviors?", "options": ["Anorexia nervosa", "Bulimia nervosa", "Binge eating disorder", "Purging disorder", "ARFID"], "correct": 2}, {"id": 365, "q": "A child repeatedly eats nonnutritive substances such as dirt or chalk for more than one month. This condition is called:", "options": ["Rumination disorder", "Pica", "Bulimia nervosa", "Anorexia nervosa"], "correct": 1}, {"id": 366, "q": "Persistent eating of non-nutritive substances for at least one month describes which condition?", "options": ["Rumination disorder", "Pica", "ARFID", "OSFED", "Night eating syndrome"], "correct": 1}, {"id": 367, "q": "Which condition involves food restriction WITHOUT body image disturbance?", "options": ["Anorexia nervosa", "Bulimia nervosa", "ARFID", "Purging disorder", "Binge eating disorder"], "correct": 2}, {"id": 368, "q": "A severely malnourished patient with anorexia nervosa is admitted to the hospital. Which complication should be carefully monitored during refeeding?", "options": ["Asthma", "Refeeding syndrome", "Appendicitis", "Migraine"], "correct": 1}, {"id": 369, "q": "Refeeding syndrome during nutritional rehabilitation is most dangerously associated with which electrolyte disturbance?", "options": ["Hypernatremia", "Hypercalcemia", "Hypophosphatemia", "Hyperkalemia", "Hypercalcemia"], "correct": 2}, {"id": 370, "q": "The most appropriate initial management of feeding and eating disorders usually includes:", "options": ["Punishment-based therapy", "Nutritional rehabilitation and psychotherapy", "Surgery", "Long-term sedation"], "correct": 1}]}, {"id": "dissociative-disorders", "name": "Dissociative Disorders", "icon": "🪞", "questions": [{"id": 371, "q": "Which mental function is typically disrupted in dissociative disorders?", "options": ["Intelligence", "Memory", "Appetite", "Language"], "correct": 1}, {"id": 372, "q": "Dissociative disorders are most commonly associated with:", "options": ["Vitamin deficiency", "Psychological trauma", "Endocrine disease", "Brain tumor", "Hypertension"], "correct": 1}, {"id": 373, "q": "Dissociative amnesia is best defined as:", "options": ["Loss of memory due to brain injury", "Loss of memory in reaction to a traumatic event", "Drug-induced memory loss", "Age-related memory decline"], "correct": 1}, {"id": 374, "q": "Dissociative amnesia is characterized as being:", "options": ["Physical rather than psychological.", "Neurological rather than functional.", "Psychological rather than physical.", "Systemic rather than localized."], "correct": 2}, {"id": 375, "q": "In dissociative amnesia, the forgoden information is usually:", "options": ["General knowledge", "Recent academic material", "Autobiographical and stressful events", "Language skills", "Motor skills"], "correct": 2}, {"id": 376, "q": "Generalized amnesia is defined as:", "options": ["Inability to recall events related to a circumscribed period of Eme.", "Ability to remember some, but not all, of the events occurring during a circumscribed period of Eme.", "Failure to recall one's entire life.", "Failure to remember a category of information."], "correct": 2}, {"id": 377, "q": "Which type of dissociative amnesia involves loss of memory for one’s entire life?", "options": ["Localized amnesia", "Selective amnesia", "Continuous amnesia", "Generalized amnesia", "Systematized amnesia"], "correct": 3}, {"id": 378, "q": "Localized amnesia is defined as:", "options": ["Failure to recall successive events as they occur.", "Inability to recall events related to a circumscribed period of Eme.", "Failure to remember a category of information, such as all memories relating to one's family.", "Failure to recall one's entire life."], "correct": 1}, {"id": 379, "q": "Selective amnesia is defined as:", "options": ["Failure to recall successive events as they occur.", "Inability to recall events related to a circumscribed period of Eme.", "Failure to remember a category of information, such as all memories relating to a particular person.", "Ability to remember some, but not all, of the events occurring during a circumscribed period of Eme."], "correct": 3}, {"id": 380, "q": "Failure to remember only some events during a specific period is called:", "options": ["Localized amnesia", "Generalized amnesia", "Continuous amnesia", "Selective amnesia", "Systematized amnesia"], "correct": 3}, {"id": 381, "q": "Continuous amnesia is defined as:", "options": ["Failure to recall successive events as they occur.", "Failure to recall one's entire life.", "Inability to recall events related to a circumscribed period of Eme.", "Ability to remember some, but not all, of the events."], "correct": 0}, {"id": 382, "q": "Systematized amnesia is defined as:", "options": ["Ability to remember some, but not all, of the events occurring during a circumscribed period of Eme.", "Failure to recall successive events as they occur.", "Failure to remember a category of information, such as all memories relating to one's family or to a particular person.", "Failure to recall one's entire life."], "correct": 2}, {"id": 383, "q": "Dissociative fugue is best defined as:", "options": ["Multiple personalities in the same person", "Feeling detached from reality", "Dissociative disorder characterized by loss of identity and travel to a new location", "Inability to recall recent events"], "correct": 2}, {"id": 384, "q": "In DSM-5, dissociative fugue is classified as:", "options": ["A subtype of schizophrenia", "A separate dissociative disorder", "A specifier of dissociative amnesia", "A subtype of PTSD", "A personality disorder"], "correct": 2}, {"id": 385, "q": "Dissociative fugue is described as:", "options": ["Failure to recall successive events as they occur.", "Sudden, unexpected travel away from home or one's customary place of daily activities, with inability to recall some or all of one's past.", "Abnormality in the endogenous opioid system.", "A category of information loss relating only to one's family."], "correct": 1}, {"id": 386, "q": "Which feature best characterizes dissociative fugue?", "options": ["Hallucinations with paranoia", "Sudden travel with inability to recall the past", "Persistent depressed mood only", "Progressive memory loss due to dementia", "Recurrent panic attacks"], "correct": 1}, {"id": 387, "q": "Dissociative identity disorder is defined by the presence of:", "options": ["Chronic delusions", "Two or more distinct identities", "Persistent visual hallucinations", "Intellectual disability", "Continuous confusion only"], "correct": 1}, {"id": 388, "q": "Which disorder commonly coexists with dissociative identity disorder?", "options": ["Parkinson disease", "Obsessive-compulsive symptoms", "Myasthenia gravis", "Hyperthyroidism", "Migraine without aura"], "correct": 1}, {"id": 389, "q": "Depersonalization is biologically characterized by:", "options": ["Age regression in hypnosis therapy.", "Effective treatment using Cognitive Behavioral Therapy (CBT).", "Abnormality in the endogenous opioid system.", "Sudden, unexpected travel away from home."], "correct": 2}, {"id": 390, "q": "During depersonalization or derealization episodes, the patient usually:", "options": ["Completely loses consciousness", "Has impaired reality testing", "Retains intact reality testing", "Develops severe amnesia immediately", "Becomes disoriented to place only"], "correct": 2}]}, {"id": "psychiatric-considerations-in-medical-disorders", "name": "Psychiatric Considerations in Medical Disorders", "icon": "🧩", "questions": [{"id": 391, "q": "A 55-year-old patient with chronic kidney disease on hemodialysis develops depression. Which antidepressant is the SAFEST to use?", "options": ["Amitriptyline", "Sertraline", "Lithium", "Venlafaxine"], "correct": 1}, {"id": 392, "q": "Which antidepressant is considered the drug of choice for depression in cardiovascular disease?", "options": ["Amitriptyline", "Imipramine", "Sertraline", "Clomipramine", "Nortriptyline"], "correct": 2}, {"id": 393, "q": "Which antidepressant is CONTRAINDICATED in a patient who recently had a myocardial infarction?", "options": ["Sertraline", "Escitalopram", "Tricyclic Antidepressants (TCAs)", "Mirtazapine"], "correct": 2}, {"id": 394, "q": "A patient with hypothyroidism presents with fatigue, weight gain, and depressed mood. What is the FIRST step in management?", "options": ["Start SSRI immediately", "Start antipsychotics", "Treat the underlying thyroid disorder first"], "correct": 2}, {"id": 395, "q": "Which psychiatric symptom is most commonly associated with Graves’ disease?", "options": ["Apathy", "Irritability", "Catatonia", "Hallucinations", "Mutism"], "correct": 1}, {"id": 396, "q": "A diabetic patient reports feeling overwhelmed, frustrated, and burned out specifically about managing his diabetes, but does not meet criteria for MDD. What is the MOST likely diagnosis?", "options": ["Adjustment Disorder", "Generalized Anxiety Disorder", "Diabetes Distress", "Dysthymia"], "correct": 2}, {"id": 397, "q": "Women with type 1 diabetes may intentionally reduce insulin doses primarily to:", "options": ["Prevent hypoglycemia", "Improve glucose control", "Achieve caloric purging", "Reduce injection pain", "Prevent ketoacidosis"], "correct": 2}, {"id": 398, "q": "Which neurological disorder has the highest association with psychiatric disturbances?", "options": ["Parkinson disease", "Multiple sclerosis", "Epilepsy", "Myasthenia gravis", "Migraine"], "correct": 2}, {"id": 399, "q": "Which state includes behaviors that are a direct manifestation of seizure activity?", "options": ["Interictal state", "Postictal state", "Peri-ictal state", "Ictal state", "Prodromal state"], "correct": 3}, {"id": 400, "q": "The most definitive method to confirm ictal psychosis is:", "options": ["CT brain", "MRI brain", "EEG recording", "Lumbar puncture", "PET scan"], "correct": 2}, {"id": 401, "q": "The most common psychiatric comorbidity in patients with epilepsy is:", "options": ["Mania", "Schizophrenia", "Depression", "OCD", "Delirium"], "correct": 2}, {"id": 402, "q": "Which of the following BEST differentiates Delirium from Dementia?", "options": ["Memory impairment", "Acute onset and fluctuating consciousness", "Disorientation", "Visual hallucinations"], "correct": 1}, {"id": 403, "q": "Which is the most common non-cognitive neuropsychiatric consequence of stroke?", "options": ["Anxiety disorder", "Post-stroke depression", "Delirium", "Mania", "Dementia"], "correct": 1}, {"id": 404, "q": "Which of the following is a proposed mechanism for post-stroke depression?", "options": ["Vitamin D deficiency", "Gene polymorphism", "Hypercalcemia", "Autoimmune thyroiditis", "Iron deficiency"], "correct": 1}, {"id": 405, "q": "In HIV-associated dementia, an early clinical feature is:", "options": ["Aphasia", "Apathy", "Tremor", "Euphoria", "Catatonia"], "correct": 1}, {"id": 406, "q": "A patient with liver cirrhosis develops confusion, agitation, and sleep disturbance. What is the MOST likely cause?", "options": ["Primary psychosis", "Hepatic Encephalopathy", "Alcohol withdrawal only", "Bipolar mania"], "correct": 1}, {"id": 407, "q": "A cancer patient expresses sadness, hopelessness, and loss of interest 2 weeks after diagnosis. What is the MOST appropriate initial intervention?", "options": ["Start chemotherapy adjustment", "Immediate hospitalization", "Psychosocial support and watchful waiting", "Start antipsychotics"], "correct": 2}, {"id": 408, "q": "Which of the following is the MOST common psychiatric comorbidity in patients with chronic pain?", "options": ["Schizophrenia", "Bipolar Disorder", "Depression and Anxiety", "OCD"], "correct": 2}, {"id": 409, "q": "Which psychological therapy has the STRONGEST evidence in managing Chronic Pain Syndrome?", "options": ["Psychoanalysis", "Cognitive Behavioral Therapy (CBT)", "Hypnotherapy", "Supportive therapy alone"], "correct": 1}, {"id": 410, "q": "Poor medication adherence in chronic medical illness is MOST strongly associated with:", "options": ["High income level", "Untreated depression", "Young age", "Urban residence"], "correct": 1}]}, {"id": "psychopharmacology-part-1", "name": "Psychopharmacology (Part 1)", "icon": "🧠", "questions": [{"id": 411, "q": "Chlorpromazine was originally developed as a:", "options": ["Antidepressant", "Surgical anesthetic", "Mood stabilizer", "Anticonvulsant", "Sedative-hypnotic"], "correct": 1}, {"id": 412, "q": "The main antipsychotic action of haloperidol is through blockade of:", "options": ["D1 receptors", "D2 receptors", "GABA receptors", "NMDA receptors", "1 receptors"], "correct": 1}, {"id": 413, "q": "Excess dopamine activity in which pathway is most closely linked to psychotic symptoms?", "options": ["Nigrostriatal pathway", "Mesolimbic pathway", "Tuberoinfundibular pathway", "Mesocortical pathway", "Spinothalamic pathway"], "correct": 1}, {"id": 414, "q": "Antipsychotic drug potency mainly reflects its:", "options": ["Clinical effectiveness", "Duration of action", "Annity for dopamine receptors", "Lipid solubility", "Sedative effect"], "correct": 2}, {"id": 415, "q": "Blockade of D2 receptors in the nigrostriatal pathway mainly contributes to:", "options": ["Better antidepressant effect", "Extrapyramidal side effects", "Improved cognition", "Weight loss", "Analgesia"], "correct": 1}, {"id": 416, "q": "Compared with low-potency agents, high-potency antipsychotics such as haloperidol generally produce:", "options": ["Greater sedation", "More antihistaminic activity", "Less sleepiness", "More anticholinergic effects", "Higher weight gain"], "correct": 2}, {"id": 417, "q": "Besides dopamine receptors, atypical antipsychotics commonly block:", "options": ["H1 receptors", "2 receptors", "5-HT2A receptors", "Muscarinic M3 receptors", "NMDA receptors"], "correct": 2}, {"id": 418, "q": "Clozapine and quetiapine have a lower risk of extrapyramidal symptoms mainly because they:", "options": ["Permanently block D2 receptors", "Increase acetylcholine release", "Have transient D2 binding with serotonin antagonism", "Stimulate dopamine release directly", "Inhibit MAO enzymes"], "correct": 2}, {"id": 419, "q": "Which of the following side effects is more common with Clozapine?", "options": ["Agranulocytosis", "Neuroleptic malignant syndrome", "Tardive dyskinesia", "Parkinsonism"], "correct": 0}, {"id": 420, "q": "What is the First-line treatment for ADHD?", "options": ["Haloperidol", "Clonidine", "Methylphenidate", "Cognitive behavioral therapy"], "correct": 2}, {"id": 421, "q": "Which of the following drugs is used to treat nocturnal enuresis?", "options": ["Imipramine", "Lithium", "Chlorpromazine", "Clozapine"], "correct": 0}, {"id": 422, "q": "Which two organ functions must be regularly checked via routine monitoring when a patient is taking Lithium?", "options": ["Liver and Cardiac", "Thyroid and Renal", "Pancreas and Gastric", "Brain and Pulmonary"], "correct": 1}, {"id": 423, "q": "Which of the following drugs decrease Lithium clearance?", "options": ["Thiazides", "NSAIDs", "ACE inhibitors", "All of the above"], "correct": 3}, {"id": 424, "q": "Which of the following is a recognized use of antidepressants?", "options": ["Acute bacterial meningitis", "Major depressive disorder", "Parkinson disease", "Hyperthyroidism", "Peptic ulcer disease"], "correct": 1}, {"id": 425, "q": "Which of the following is a common adverse effect of antidepressants?", "options": ["Hypoglycemia", "Dry mouth", "Bradycardia", "Neutropenia", "Hearing loss"], "correct": 1}, {"id": 426, "q": "SSRIs would be effective in treating all of the following conditions except:", "options": ["OCD", "Bipolar disorder", "Depression", "Generalized anxiety disorder"], "correct": 1}, {"id": 427, "q": "For a patient suffering from PTSD, which of the following is the most appropriate pharmacotherapy?", "options": ["Antipsychotics", "Lithium", "Benzodiazepines", "SSRIs"], "correct": 3}, {"id": 428, "q": "Which of the following are classic adverse effects or signs of Amitriptyline toxicity?", "options": ["Convulsions", "Coma", "Cardiotoxicity", "All of the above"], "correct": 3}, {"id": 429, "q": "Combining an MAOI with an SSRI may lead to which of the following?", "options": ["Neuroleptic malignant syndrome", "Cushing syndrome", "Serotonin syndrome", "Stevens-Johnson syndrome"], "correct": 2}, {"id": 430, "q": "What is the classic adverse effect of Trazodone?", "options": ["Agranulocytosis", "Priapism", "Hyperglycemia", "Nephrotoxicity"], "correct": 1}]}, {"id": "psychotherapy", "name": "Psychotherapy", "icon": "🌀", "questions": [{"id": 431, "q": "Who First used the term 'psychoanalysis' in 1896?", "options": ["Carl Jung", "Sigmund Freud", "Alfred Adler", "Albert Ellis"], "correct": 1}, {"id": 432, "q": "Which structural component of personality operates merely on the \"pleasure principle\"?", "options": ["Ego", "Conscious", "Id"], "correct": 2}, {"id": 433, "q": "The Ego operates on which of the following principles?", "options": ["Pleasure principle", "Reality principle", "Moral principle", "All-or-nothing principle"], "correct": 1}, {"id": 434, "q": "What is the First stage in Freud's psychosexual phases of development?", "options": ["Anal", "Phallic", "Oral", "Latency"], "correct": 2}, {"id": 435, "q": "1. The following techniques are used in Supportive Psychotherapy, except", "options": ["Free Association", "Guidance", "Suggestion", "Reassurance"], "correct": 0}, {"id": 436, "q": "Which defense mechanism involves hiding a feeling and forcing it from the conscious to the unconscious?", "options": ["Projection", "Repression", "Regression", "Denial"], "correct": 1}, {"id": 437, "q": "2. A patient who returns to childish behavior during stress is using which defense mechanism?", "options": ["Conversion", "Regression", "Distortion", "Splitng"], "correct": 1}, {"id": 438, "q": "Falling back into an earlier state of mental or physical development that is seen as \"safer\" is called:", "options": ["Regression", "Sublimation", "Conversion", "Distortion"], "correct": 0}, {"id": 439, "q": "3. Which defense mechanism is considered the most socially acceptable expression of anxiety?", "options": ["Denial", "Projection", "Sublimation", "Conversion"], "correct": 2}, {"id": 440, "q": "4. A wife who is unconsciously attracted to another man becomes excessively affectionate toward her husband. This is an example of:", "options": ["Projection", "Reaction formation", "Splitng", "Repression"], "correct": 1}, {"id": 441, "q": "Expressing an intrapsychic conflict as a physical symptom (such as blindness or paralysis) is known as:", "options": ["Denial", "Conversion", "Splitng", "Reaction formation"], "correct": 1}, {"id": 442, "q": "5. The modern roots of Cognitive Behavioral Therapy resulted from the merging of:", "options": ["Psychoanalysis and hypnosis", "Behavioral therapy and cognitive therapy", "Humanistic therapy and psychoanalysis", "Gestalt therapy and behaviorism"], "correct": 1}, {"id": 443, "q": "6. Which scientist's work on conditioning strongly influenced the development of behavioral therapy techniques?", "options": ["Sigmund Freud", "Alfred Adler", "Ivan Pavlov", "Carl Gustav Jung"], "correct": 2}, {"id": 444, "q": "7. Who developed the earliest cognitive-based psychotherapy known as Rational Emotive Behavior Therapy (REBT)?", "options": ["Albert Ellis", "Joseph Wolpe", "Aaron Beck", "Rosalie Rayner"], "correct": 0}, {"id": 445, "q": "8. “Seeing life only in black-and-white categories with no middle ground” describes which cognitive distortion?", "options": ["Emotional reasoning", "Mental Ultering", "All-or-nothing thinking", "Fortune-telling"], "correct": 2}, {"id": 446, "q": "Looking at life in extreme \"black-and-white\" categories with no in-between is known as:", "options": ["All-or-nothing thinking", "Fortune-telling", "Mind reading", "Personalization"], "correct": 0}, {"id": 447, "q": "9. Predicting negative outcomes of events before they happen is called:", "options": ["Mind reading", "Fortune-telling", "Labeling", "Personalization"], "correct": 1}, {"id": 448, "q": "Inferring a person's thoughts from their behavior without asking them is a subtype of jumping to conclusions called:", "options": ["Fortune-telling", "Mind reading", "Minimization", "Labeling"], "correct": 1}, {"id": 449, "q": "10. A person who focuses only on the negative details of a situation while ignoring the positive aspects is demonstrating:", "options": ["Mental Ultering", "Overgeneralization", "Catastrophizing", "Splitng"], "correct": 0}, {"id": 450, "q": "Giving greater weight to the worst possible outcome, however unlikely, is called:", "options": ["Emotional reasoning", "Catastrophizing", "Blaming", "Overgeneralizing"], "correct": 1}]}, {"id": "personality-disorders", "name": "Personality Disorders", "icon": "😔", "questions": [{"id": 451, "q": "What is the estimated median rate of diagnosable Personality Disorders in the general population?", "options": ["5.2%", "10.6%", "20.0%", "40-60%"], "correct": 1}, {"id": 452, "q": "Generally, all personality disorders are more prevalent in males EXCEPT:", "options": ["Paranoid and Schizoid", "Borderline, Histrionic, and Dependent", "Antisocial and Narcissistic", "Schizotypal and OCPD"], "correct": 1}, {"id": 453, "q": "Decreased levels of which neurotransmitter are associated with impulsivity and aggression?", "options": ["Dopamine", "Serotonin (SE)", "Norepinephrine (NE)", "Acetylcholine"], "correct": 1}, {"id": 454, "q": "Which Personality Disorder cluster is described as \"odd or eccentric\"?", "options": ["Cluster A", "Cluster C", "Cluster B"], "correct": 0}, {"id": 455, "q": "Paranoid and schizoid personality disorders belong to:", "options": ["Cluster A", "Cluster B", "Cluster C", "Mood disorders"], "correct": 0}, {"id": 456, "q": "Which of these is a personality disorder characterized by extreme suspiciousness and distrust of others?", "options": ["Paranoid Personality Disorder", "Narcissistic Personality Disorder", "Obsessive-Compulsive Personality Disorder", "Antisocial Personality Disorder"], "correct": 0}, {"id": 457, "q": "Which Personality Disorder is characterized by a pattern of irrational suspicion and mistrust of others?", "options": ["Schizoid Personality Disorder", "Paranoid Personality Disorder", "Borderline Personality Disorder", "Narcissistic Personality Disorder"], "correct": 1}, {"id": 458, "q": "A patient who is detached from social relationships, prefers solitary activities, and shows restricted emotional expression most likely has:", "options": ["Schizotypal Personality Disorder", "Avoidant Personality Disorder", "Schizoid Personality Disorder", "Borderline Personality Disorder"], "correct": 2}, {"id": 459, "q": "Magical thinking, odd beliefs, and peculiar behaviors are characteristic of which disorder?", "options": ["Schizoid Personality Disorder", "Schizotypal Personality Disorder", "Paranoid Personality Disorder", "Narcissistic Personality Disorder"], "correct": 1}, {"id": 460, "q": "According to DSM-5, Cluster B includes which group of disorders?", "options": ["Paranoid, Schizoid, Schizotypal", "Avoidant, Dependent, Obsessive-compulsive", "Antisocial, Borderline, Histrionic, Narcissistic", "Depressive, Passive-aggressive"], "correct": 2}, {"id": 461, "q": "A person who completely lacks empathy, breaks the law, and violates the rights of others might have:", "options": ["Schizotypal Personality Disorder", "Antisocial Personality Disorder", "Paranoid Personality Disorder", "Dependent Personality Disorder"], "correct": 1}, {"id": 462, "q": "Lack of guilt and repeated illegal acts are common in:", "options": ["Dependent PD", "Antisocial PD", "Avoidant PD", "Schizoid PD"], "correct": 1}, {"id": 463, "q": "Severe instability in mood, relationships, and self-image is the main feature of:", "options": ["Borderline Personality Disorder", "Schizotypal Personality Disorder", "Dependent Personality Disorder", "Paranoid Personality Disorder"], "correct": 0}, {"id": 464, "q": "Fear of abandonment is a feature of:", "options": ["Borderline PD", "Paranoid PD", "Avoidant PD", "Schizotypal PD"], "correct": 0}, {"id": 465, "q": "Which disorder involves a grand sense of self-importance and a need for constant admiration?", "options": ["Paranoid Personality Disorder", "Narcissistic Personality Disorder", "Obsessive-Compulsive Personality Disorder", "Dependent Personality Disorder"], "correct": 1}, {"id": 466, "q": "Adention-seeking behavior and excessive emotionality (acting dramatic) is typical", "options": ["Histrionic Personality Disorder", "Avoidant Personality Disorder", "Schizotypal Personality Disorder", "Dependent Personality Disorder"], "correct": 0}, {"id": 467, "q": "Which Personality Disorder involves a pervasive pattern of attention-seeking behavior and excessive emotions?", "options": ["Histrionic Personality Disorder", "Dependent Personality Disorder", "Antisocial Personality Disorder", "Schizotypal Personality Disorder"], "correct": 0}, {"id": 468, "q": "Avoiding social situations because of intense fear of rejection and feelings of inadequacy is called:", "options": ["Avoidant Personality Disorder", "Narcissistic Personality Disorder", "Schizotypal Personality Disorder", "Antisocial Personality Disorder"], "correct": 0}, {"id": 469, "q": "Which Cluster C disorder is characterized by extreme sensitivity to negative evaluation, feelings of inadequacy, and social inhibition?", "options": ["Dependent Personality Disorder", "Avoidant Personality Disorder", "Obsessive-compulsive Personality Disorder", "Paranoid Personality Disorder"], "correct": 1}, {"id": 470, "q": "A person who is overly dependent on others to make decisions and has a fear of being alone may have:", "options": ["Dependent Personality Disorder", "Histrionic Personality Disorder", "Schizotypal Personality Disorder", "Paranoid Personality Disorder"], "correct": 0}]}, {"id": "crisis-disaster-mental-health", "name": "Crisis & Disaster Mental Health", "icon": "⚡", "questions": [{"id": 471, "q": "A disaster is a:", "options": ["Normal event", "Critical incident", "Daily activity", "Small problem"], "correct": 1}, {"id": 472, "q": "Which of these is a natural disaster?", "options": ["Car accident", "Airplane crash", "Flood", "Fire at home"], "correct": 2}, {"id": 473, "q": "Earthquakes are classified as:", "options": ["Human-made disasters", "Natural disasters", "Economic problems", "Social events"], "correct": 1}, {"id": 474, "q": "In a disaster, how does the psychological \"footprint\" compare to the medical \"footprint\"?", "options": ["The medical footprint is much larger.", "The psychological footprint greatly exceeds the medical footprint.", "Both footprints are always equal.", "Disasters do not have a psychological footprint."], "correct": 1}, {"id": 475, "q": "Disaster can cause:", "options": ["Happiness only", "Anxiety and stress", "Better sleep", "No emotional effect"], "correct": 1}, {"id": 476, "q": "Anxiety after disasters may cause:", "options": ["Good concentration", "Sleep problems", "Better memory", "Increased appetite only"], "correct": 1}, {"id": 477, "q": "The First reaction after a disaster is often:", "options": ["Excitement", "Shock", "Happiness", "Relaxation"], "correct": 1}, {"id": 478, "q": "Which phase of stress reaction typically lasts from 1 to 6 weeks following a disaster?", "options": ["Acute phase", "Reaction phase", "Repair phase", "Reorientation phase"], "correct": 1}, {"id": 479, "q": "During which phase of disaster stress reaction do individuals begin to take interest in everyday life and make plans for the future (lasting 1 to 6 months)?", "options": ["Acute phase", "Reaction phase", "Repair phase", "Emergency phase"], "correct": 2}, {"id": 480, "q": "Grief after disasters may include:", "options": ["Joy", "Denial", "Excitement", "Confidence"], "correct": 1}, {"id": 481, "q": "How many stages are there in the classic stages of grief?", "options": ["3", "4", "5", "7"], "correct": 2}, {"id": 482, "q": "Loss of home after a disaster is a type of:", "options": ["Physical loss", "Educational success", "Entertainment", "Reward"], "correct": 0}, {"id": 483, "q": "Disaster management aims to:", "options": ["Increase damage", "Reduce harm", "Stop communication", "Ignore victims"], "correct": 1}, {"id": 484, "q": "What are the 3 basic action principles of Psychological First Aid (PFA)?", "options": ["Read, Write, Speak", "Look, Listen, Link", "Diagnose, Treat, Cure", "Assess, Evaluate, Discharge"], "correct": 1}, {"id": 485, "q": "Psychological First Aid (PFA) is BEST described as:", "options": ["Professional psychiatric therapy", "Psychological debriefing", "A set of skills to provide basic practical and emotional support"], "correct": 2}, {"id": 486, "q": "When delivering Psychological First Aid, a helper should ALWAYS:", "options": ["Force the person to talk about the traumatic event", "Promise things that cannot be fulfilled", "Respect privacy and maintain confidentiality", "Charge a small fee for their services"], "correct": 2}, {"id": 487, "q": "Which fundamental principle of \"Do No Harm\" focuses on treating people with respect and in accordance with cultural/social norms?", "options": ["Safety", "Dignity", "Rights", "Authority"], "correct": 1}, {"id": 488, "q": "Which level of MHPSS implementation involves services provided directly by mental health care specialists (e.g., psychiatrists, psychologists)?", "options": ["Level 1", "Level 2", "Level 3", "Level 4"], "correct": 3}, {"id": 489, "q": "Community support after disasters helps people to:", "options": ["Recover emotionally", "Forget food", "Avoid communication", "Increase fear"], "correct": 0}, {"id": 490, "q": "What is defined as the ability to positively adapt and \"bounce back\" in the face of adversity?", "options": ["Resilience", "Regression", "Conversion", "Projection"], "correct": 0}]}, {"id": "suicide", "name": "Suicide", "icon": "😰", "questions": [{"id": 491, "q": "The term \"suicide\" is derived from which language?", "options": ["Greek", "Latin", "French", "German"], "correct": 1}, {"id": 492, "q": "Which gender is likely to be dead by suicide?", "options": ["Male", "Female", "Both", "It depends on the country and culture"], "correct": 0}, {"id": 493, "q": "Compared with women, men complete suicide at approximately:", "options": ["Equal rate", "Twice the rate", "3–4 Emes the rate", "10 Emes the rate"], "correct": 2}, {"id": 494, "q": "Women attempt suicide about how many times more often than men?", "options": ["Equal rate", "Twice", "Three Emes", "Five Emes"], "correct": 2}, {"id": 495, "q": "Which psychiatric disorder is most strongly associated with suicide risk?", "options": ["Schizophrenia", "Major depressive disorder", "ADHD", "Specific phobia"], "correct": 1}, {"id": 496, "q": "Which psychiatric disorder is most commonly associated with completed suicide?", "options": ["Schizophrenia", "Major depression", "Dementia", "OCD"], "correct": 1}, {"id": 497, "q": "Which mental disorder carries about a sevenfold increased suicide risk?", "options": ["OCD", "Panic disorder", "Bipolar disorder", "Dementia", "ADHD"], "correct": 1}, {"id": 498, "q": "Which neurotransmitter is most commonly linked to suicidal behavior when decreased?", "options": ["Dopamine", "Serotonin", "Acetylcholine", "Histamine"], "correct": 1}, {"id": 499, "q": "Which of the following is considered a major risk factor for suicide?", "options": ["Strong family support", "Previous suicide attempt", "Stable employment", "Good coping skills"], "correct": 1}, {"id": 500, "q": "The strongest predictor of future suicide is:", "options": ["Family history", "Previous suicide attempt", "Male sex", "Unemployment", "Smoking"], "correct": 1}, {"id": 501, "q": "Which age group has the highest completed suicide rate in many countries?", "options": ["Children", "Adolescents", "Older adults", "Infants"], "correct": 2}, {"id": 502, "q": "Which of the following protective factors decreases suicide risk?", "options": ["Social isolation", "Substance abuse", "Strong social support", "History of trauma"], "correct": 2}, {"id": 503, "q": "Which factor is considered protective against suicide?", "options": ["Divorce", "Unemployment", "Increased religiosity", "Chronic illness", "Substance abuse"], "correct": 2}, {"id": 504, "q": "A patient with suicidal thoughts should always be asked about:", "options": ["Favorite hobbies", "Dietary habits", "Suicide plan and available means", "Educational level", "Blood group"], "correct": 2}, {"id": 505, "q": "A patient expresses suicidal thoughts with a detailed plan and access to means. What is the most appropriate next step?", "options": ["Reassure the patient and discharge home", "Ignore the statement", "Immediate psychiatric assessment and safety measures", "Start vitamins only"], "correct": 2}, {"id": 506, "q": "A patient who suddenly becomes calm after severe depression and suicidal ideation may:", "options": ["Be fully recovered", "Have decided to attempt suicide", "Develop mania", "No longer need follow-up"], "correct": 1}, {"id": 507, "q": "Which method is more commonly used by men to complete suicide?", "options": ["Drug overdose", "Poisoning", "Firearms and hanging", "Wrist cutng", "Drug injection"], "correct": 2}, {"id": 508, "q": "A patient presents after an overdose attempt. What is the First priority in management?", "options": ["Psychotherapy", "Family counseling", "Medical stabilization", "Long-term rehabilitation"], "correct": 2}, {"id": 509, "q": "Which of the following is an indication for hospital admission in a suicidal patient?", "options": ["Good social support", "No suicide plan", "Poor judgment", "No access to means", "Ability to contract for safety"], "correct": 2}, {"id": 510, "q": "A teenager engages in self-harm behavior without intent to die. This is best described as:", "options": ["Completed suicide", "Suicidal ideation", "Non-suicidal self-injury", "Euthanasia"], "correct": 2}]}, {"id": "substance-use-disorders-part-1", "name": "Substance Use Disorders (Part 1)", "icon": "🎭", "questions": [{"id": 511, "q": "A patient who cannot stop using a drug despite harmful consequences is most likely suffering from:", "options": ["Phobia", "Substance use disorder", "Delirium", "Dementia"], "correct": 1}, {"id": 512, "q": "DSM-5 classifies substance-related disorders as:", "options": ["Substance abuse only", "Substance dependence only", "Substance use disorder", "Drug addiction syndrome", "Chemical dependence"], "correct": 2}, {"id": 513, "q": "A diagnosis of substance use disorder requires at least:", "options": ["One symptom in 6 months", "Two symptoms within 1 year", "Three symptoms in 2 years", "Four symptoms within 6 months", "Five symptoms in 1 year"], "correct": 1}, {"id": 514, "q": "Which feature indicates physiological dependence?", "options": ["Craving only", "Social withdrawal only", "Tolerance or withdrawal", "Relationship problems only", "Poor work performance"], "correct": 2}, {"id": 515, "q": "Which neurotransmitter pathway is mainly involved in addiction and reward?", "options": ["Nigrostriatal dopamine pathway", "Mesolimbic dopamine pathway", "Corticospinal tract", "Serotonergic raphe pathway"], "correct": 1}, {"id": 516, "q": "Alcohol withdrawal may commonly cause:", "options": ["Bradycardia", "Tremors", "Pinpoint pupils", "Hypersomnia"], "correct": 1}, {"id": 517, "q": "Which of the following substances is most associated with severe withdrawal that may become life\u0002threatening?", "options": ["Cannabis", "Cocaine", "Alcohol", "LSD"], "correct": 2}, {"id": 518, "q": "Delirium tremens usually occurs when:", "options": ["Alcohol intake suddenly increases", "Blood alcohol level suddenly falls", "Cannabis is combined with alcohol", "Opioids are withdrawn", "Cocaine is stopped abruptly"], "correct": 1}, {"id": 519, "q": "Alcohol enters the bloodstream mainly through the:", "options": ["Stomach", "Colon", "Liver", "Small intestine", "Pancreas"], "correct": 3}, {"id": 520, "q": "Alcohol reduces tension primarily by stimulating:", "options": ["Dopamine receptors", "Serotonin receptors", "GABA receptors", "Glutamate receptors", "Nicotinic receptors"], "correct": 2}, {"id": 521, "q": "A chronic alcoholic presents with confusion, ataxia, and ophthalmoplegia. The most likely diagnosis is:", "options": ["Parkinson disease", "Wernicke encephalopathy", "Schizophrenia", "Alzheimer disease"], "correct": 1}, {"id": 522, "q": "Deficiency of which vitamins in alcoholism may cause amnestic syndrome?", "options": ["Vitamin A", "Vitamin C", "Vitamin D", "B-complex vitamins", "Vitamin K"], "correct": 3}, {"id": 523, "q": "Heavy alcohol use during pregnancy may lead to:", "options": ["Hyperactivity only", "Fetal growth retardation", "Congenital heart block only", "Deafness only"], "correct": 1}, {"id": 524, "q": "Which substance commonly causes pinpoint pupils?", "options": ["Amphetamine", "Cannabis", "Opioids", "LSD"], "correct": 2}, {"id": 525, "q": "Methadone is mainly used in psychiatry for:", "options": ["Alcohol intoxication", "Nicotine withdrawal", "Opioid dependence treatment", "Cocaine overdose"], "correct": 2}, {"id": 526, "q": "Which of the following is considered a stimulant drug?", "options": ["Alcohol", "Heroin", "Cocaine", "Diazepam"], "correct": 2}, {"id": 527, "q": "A patient using cocaine presents with chest pain and severe hypertension. The mechanism is mainly due to:", "options": ["CNS depression", "Increased parasympathetic activity", "Sympathetic overactivity", "Serotonin deficiency"], "correct": 2}, {"id": 528, "q": "The addictive component of tobacco is:", "options": ["Tar", "Carbon monoxide", "Nicotine", "Ammonia"], "correct": 2}, {"id": 529, "q": "The major active ingredient in cannabis is:", "options": ["Morphine", "THC", "LSD", "PCP", "Nicotine"], "correct": 1}, {"id": 530, "q": "Needle sharing in IV drug abuse increases the risk of:", "options": ["Asthma", "Diabetes mellitus", "Hepatitis B and HIV", "Hypertension"], "correct": 2}]}, {"id": "substance-use-disorders-part-2", "name": "Substance Use Disorders (Part 2)", "icon": "💊", "questions": [{"id": 531, "q": "Nearly all addictive drugs activate the brain's:", "options": ["Visual pathway", "Mesolimbic dopamine pathway", "Corticospinal tract", "Vestibular system", "Cerebellar pathway"], "correct": 1}, {"id": 532, "q": "Substance abuse can affect the:", "options": ["Brain", "Heart", "Liver", "All of the above"], "correct": 3}, {"id": 533, "q": "A patient with pinpoint pupils, respiratory depression, and coma most likely has intoxication with:", "options": ["Amphetamines", "Opioids", "Cannabis", "LSD"], "correct": 1}, {"id": 534, "q": "Which of the following is an opioid?", "options": ["Cocaine", "LSD", "Morphine", "Nicotine"], "correct": 2}, {"id": 535, "q": "Opioid withdrawal commonly includes:", "options": ["Constipation only", "Muscle aches and yawning", "Hypertension only", "Hallucinations only", "Hyperactivity only"], "correct": 1}, {"id": 536, "q": "A 24-year-old man presents with respiratory depression and decreased level of consciousness after taking an excessive dose of morphine. Which is the most appropriate immediate treatment?", "options": ["Flumazenil", "Naloxone", "Atropine", "Diazepam", "Methadone"], "correct": 1}, {"id": 537, "q": "Methadone is mainly used to treat dependence on:", "options": ["Cocaine", "Nicotine", "Heroin", "Cannabis"], "correct": 2}, {"id": 538, "q": "A patient with alcohol use disorder develops memory loss and confabulation. This syndrome is called:", "options": ["Korsakom syndrome", "Parkinson disease", "Delirium tremens", "Schizophrenia"], "correct": 0}, {"id": 539, "q": "Wernicke encephalopathy classically presents with:", "options": ["Tremor, rigidity, and bradykinesia", "Confusion, ophthalmoplegia, and ataxia", "Chest pain and dyspnea", "Fever and neck stimness"], "correct": 1}, {"id": 540, "q": "Chronic alcohol use commonly leads to deficiency of which vitamin?", "options": ["Vitamin C", "Vitamin D", "Thiamine (Vitamin B1)", "Vitamin K"], "correct": 2}, {"id": 541, "q": "Which organ is commonly damaged by chronic alcohol abuse?", "options": ["Liver", "Skin", "Nails", "Teeth"], "correct": 0}, {"id": 542, "q": "Which medication causes nausea and vomiting if alcohol is consumed?", "options": ["Methadone", "Naloxone", "Disulfiram (Antabuse)", "Acamprosate"], "correct": 2}, {"id": 543, "q": "A patient using amphetamines is most likely to present with:", "options": ["Increased sleep", "Dilated pupils and agitation", "Respiratory depression", "Severe sedation"], "correct": 1}, {"id": 544, "q": "Amphetamines mainly increase brain levels of:", "options": ["GABA and glycine", "Dopamine and norepinephrine", "Histamine and serotonin only", "Acetylcholine only", "Glutamate only"], "correct": 1}, {"id": 545, "q": "Crack is a form of:", "options": ["Heroin", "Cannabis", "Cocaine", "LSD"], "correct": 2}, {"id": 546, "q": "A common acute effect of cannabis is:", "options": ["Decreased appetite", "Bloodshot eyes", "Bradycardia", "Pinpoint pupils", "Hyperthermia"], "correct": 1}, {"id": 547, "q": "Long-term cannabis use commonly results in:", "options": ["Permanent euphoria", "Improved memory", "Tolerance development", "Increased IQ"], "correct": 2}, {"id": 548, "q": "Flashbacks are classically associated with:", "options": ["Nicotine", "LSD", "Morphine", "Alcohol"], "correct": 1}, {"id": 549, "q": "A 30-year-old man who injects drugs presents with fever and a new heart murmur. Which complication is strongly associated with intravenous drug abuse?", "options": ["Peptic ulcer", "Infective endocarditis", "Appendicitis", "Asthma", "Migraine"], "correct": 1}, {"id": 550, "q": "Which route of heroin administration carries the highest risk of HIV transmission?", "options": ["Oral", "Inhalation", "Intravenous injection", "Transdermal"], "correct": 2}]}, {"id": "psychopharmacology-part-2", "name": "Psychopharmacology (Part 2)", "icon": "🛌", "questions": [{"id": 551, "q": "Which side effect is commonly associated with antipsychotic medications?", "options": ["Hypertension", "Extrapyramidal symptoms", "Hyperthyroidism", "Peptic ulcer"], "correct": 1}, {"id": 552, "q": "Clozapine is mainly reserved for:", "options": ["Mild anxiety", "Treatment-resistant schizophrenia", "Insomnia", "Migraine"], "correct": 1}, {"id": 553, "q": "Agranulocytosis is a serious adverse effect of:", "options": ["Fluoxetine", "Clozapine", "Lithium", "Diazepam"], "correct": 1}, {"id": 554, "q": "Which antipsychotic has the lowest risk of extrapyramidal symptoms?", "options": ["Haloperidol", "Chlorpromazine", "Clozapine", "Fluphenazine"], "correct": 2}, {"id": 555, "q": "A patient taking lithium should have regular monitoring of:", "options": ["Liver enzymes only", "Serum lithium levels and renal function", "Blood glucose only", "ECG only"], "correct": 1}, {"id": 556, "q": "Which drug is used to reverse opioid overdose?", "options": ["Methadone", "Naloxone", "Disulfiram", "Buspirone"], "correct": 1}, {"id": 557, "q": "Which condition is characterized by a persistent low mood and loss of interest?", "options": ["Panic disorder", "Major depressive disorder", "Delirium", "Dementia", "OCD"], "correct": 1}, {"id": 558, "q": "Which investigation is commonly performed to exclude organic causes of depressive symptoms?", "options": ["Chest X-ray", "Thyroid function tests", "Colonoscopy", "Echocardiography", "Spirometry"], "correct": 1}, {"id": 559, "q": "Before initiating treatment for depression, the First priority is:", "options": ["Start antidepressants immediately", "Perform risk assessment", "Prescribe vitamins", "Order MRI for all patients", "Begin family therapy"], "correct": 1}, {"id": 560, "q": "Mild depression is most appropriately managed initially with:", "options": ["Antipsychotics", "Electroconvulsive therapy", "Psychotherapy", "Mood stabilizers", "Benzodiazepines"], "correct": 2}, {"id": 561, "q": "In moderate to severe depression, the recommended First-line treatment is:", "options": ["Psychotherapy alone", "Bright light therapy alone", "Anticonvulsants", "Antipsychotics alone", "Antidepressant medication"], "correct": 4}, {"id": 562, "q": "Cognitive behavioral therapy (CBT) mainly aims to:", "options": ["Increase REM sleep", "Identify and modify negative thoughts", "Improve memory directly", "Eliminate hallucinations"], "correct": 1}, {"id": 563, "q": "Electroconvulsive therapy (ECT) is particularly indicated when:", "options": ["Depression is very mild", "Rapid clinical improvement is required", "Anxiety is the only complaint", "The patient has insomnia only"], "correct": 1}, {"id": 564, "q": "SSRIs increase synaptic levels of:", "options": ["Dopamine", "Serotonin", "Histamine", "Acetylcholine"], "correct": 1}, {"id": 565, "q": "Which antidepressant group is recommended by NICE as First-line therapy because of beder safety and tolerability?", "options": ["MAOIs", "Tricyclic antidepressants", "SSRIs", "Lithium"], "correct": 2}, {"id": 566, "q": "Which antidepressant side effect is most associated with SSRIs?", "options": ["Dry cough", "Sexual dysfunction", "Hypoglycemia", "Hair loss"], "correct": 1}, {"id": 567, "q": "A common adverse effect of SSRIs is:", "options": ["Severe liver failure", "Sexual dysfunction", "Cataract formation", "Renal stones", "Hearing loss"], "correct": 1}, {"id": 568, "q": "The therapeutic effect of antidepressants usually begins after:", "options": ["A few minutes", "1–2 hours", "2–6 weeks", "Several months only"], "correct": 2}, {"id": 569, "q": "Most antidepressants require approximately how long before significant therapeutic effects appear?", "options": ["24 hours", "2–3 days", "1 week", "3–4 weeks", "3 months"], "correct": 3}, {"id": 570, "q": "Serotonin syndrome may present with:", "options": ["Hypothermia and bradycardia", "Agitation, hyperreflexia, and fever", "Coma without autonomic changes", "Jaundice only"], "correct": 1}]}, {"id": "illness-anxiety-body-dysmorphic-disorder-hypochondriasis", "name": "Illness Anxiety, Body Dysmorphic Disorder & Hypochondriasis", "icon": "🔍", "questions": [{"id": 571, "q": "A patient is excessively preoccupied with an imagined defect in physical appearance. This condition is called:", "options": ["Panic disorder", "Schizophrenia", "Body dysmorphic disorder", "Cyclothymia"], "correct": 2}, {"id": 572, "q": "Body Dysmorphic Disorder (BDD) is characterized by:", "options": ["Excessive concern about perceived defects in appearance", "Memory loss", "Persistent hallucinations", "Elevated mood", "Delirium"], "correct": 0}, {"id": 573, "q": "The perceived physical flaws in BDD are often:", "options": ["Unnoticeable to others", "Life-threatening", "Large tumors", "Paralysis", "Congenital deformities"], "correct": 0}, {"id": 574, "q": "Which of the following is a common behavior in body dysmorphic disorder (BDD)?", "options": ["Reality testing exercises", "Mirror checking", "Social confidence", "Increased appetite"], "correct": 1}, {"id": 575, "q": "A common behavior in BDD is:", "options": ["Loss of consciousness", "Repeated mirror checking", "Hearing voices", "Wandering"], "correct": 1}, {"id": 576, "q": "Patients with BDD may try to hide the affected body part by using:", "options": ["Hearing aids", "Wheelchairs", "Hats, scarves, or makeup", "Bandages only"], "correct": 2}, {"id": 577, "q": "Which behavior is commonly seen in BDD?", "options": ["Social confidence", "Constant comparison with others", "Memory improvement", "Increased appetite only"], "correct": 1}, {"id": 578, "q": "A patient with BDD often:", "options": ["Avoids mirrors because of blindness", "Ignores appearance completely", "Seeks repeated reassurance about appearance", "Has no concern about appearance"], "correct": 2}, {"id": 579, "q": "One diagnostic requirement for BDD is:", "options": ["Hypertension", "Presence of fever", "Abnormal ECG", "Low IQ", "Concern interferes with normal functioning"], "correct": 4}, {"id": 580, "q": "BDD is most common in:", "options": ["Newborns", "Infants", "Preschool children", "Teenagers and young adults"], "correct": 3}, {"id": 581, "q": "BDD affects:", "options": ["Only males", "Only females", "Both males and females", "Children only", "Elderly people only"], "correct": 2}, {"id": 582, "q": "Which of the following may contribute to BDD?", "options": ["Hypertension", "Family history of BDD", "Asthma", "Cataracts"], "correct": 1}, {"id": 583, "q": "Which neurotransmitter is most commonly implicated in obsessive thoughts in BDD?", "options": ["Serotonin", "Histamine", "Acetylcholine", "Glycine"], "correct": 0}, {"id": 584, "q": "Patients with body dysmorphic disorder are at increased risk of:", "options": ["Hypertension only", "Epilepsy", "Dementia", "Suicide and depression"], "correct": 3}, {"id": 585, "q": "A patient believes that minor acne scars make him extremely ugly, causing social withdrawal. This is most consistent with:", "options": ["Body dysmorphic disorder", "Delusional disorder", "Social anxiety disorder", "Malingering"], "correct": 0}, {"id": 586, "q": "Hypochondriasis is now commonly referred to in DSM-5 as:", "options": ["Illness anxiety disorder", "Somatic symptom disorder", "Conversion disorder", "Factitious disorder"], "correct": 0}, {"id": 587, "q": "What is the former name of illness anxiety disorder?", "options": ["Conversion disorder", "Hypochondriasis", "Somatic symptom disorder", "Factitious disorder", "Munchausen syndrome"], "correct": 1}, {"id": 588, "q": "Which of the following best describes the core feature of illness anxiety disorder?", "options": ["Deliberate fabrication of physical symptoms", "Unrealistic fear of having a serious medical illness", "Actual presence of unexplained physical symptoms", "Complete denial of any health concerns", "Indifference toward normal body functions"], "correct": 1}, {"id": 589, "q": "A patient repeatedly visits doctors fearing serious illness despite normal investigations. The most likely diagnosis is:", "options": ["Major depressive disorder", "Illness anxiety disorder", "Schizophrenia", "Bipolar disorder"], "correct": 1}, {"id": 590, "q": "What is the estimated prevalence of illness anxiety disorder in the general population?", "options": ["Less than 1%", "5-7%", "10-12%", "15-20%", "25-30%"], "correct": 0}, {"id": 591, "q": "At what age does illness anxiety disorder most commonly begin?", "options": ["Childhood", "Adolescence", "Early adulthood", "Middle adulthood", "Late adulthood"], "correct": 2}, {"id": 592, "q": "Which of the following is a characteristic of the care-seeking subtype of illness anxiety disorder?", "options": ["Avoidance of all medical appointments", "Distrust of healthcare providers", "Frequent visits to multiple specialists", "Refusal to undergo medical testing", "Belief that symptoms are not serious"], "correct": 2}, {"id": 593, "q": "Which of the following statements is true about the care-avoidant subtype?", "options": ["They frequently seek care from multiple specialists", "They trust doctors completely", "They actively request many medical tests", "They may avoid doctors due to distrust", "They rarely experience anxiety about health"], "correct": 3}, {"id": 594, "q": "Which of the following is considered a predisposing factor for illness anxiety disorder?", "options": ["High socioeconomic status", "Childhood trauma or neglect", "Strong social support network", "Absence of family history of anxiety", "Excellent physical health in childhood"], "correct": 1}, {"id": 595, "q": "Which behavior is commonly seen in patients with illness anxiety disorder?", "options": ["Avoiding all information about diseases", "Constantly researching diseases and symptoms", "Refusing to discuss health with others", "Showing no concern about body functions", "Ignoring normal physiological changes"], "correct": 1}, {"id": 596, "q": "Which feature helps distinguish illness anxiety disorder from somatic symptom disorder?", "options": ["Presence of severe physical symptoms", "Excessive anxiety despite minimal symptoms", "Presence of hallucinations", "Acute confusion"], "correct": 1}, {"id": 597, "q": "The best initial management for illness anxiety disorders includes:", "options": ["Repeated unnecessary investigations", "Immediate surgery", "Isolation from family", "Regular follow-up and reassurance"], "correct": 3}, {"id": 598, "q": "What is the primary goal of pharmacotherapy in illness anxiety disorder?", "options": ["To cure the disorder completely", "To replace psychotherapy entirely", "To treat comorbid depression or anxiety", "To eliminate all physical sensations"], "correct": 2}, {"id": 599, "q": "Which of the following is a recommended management principle for illness anxiety disorder?", "options": ["Perform multiple invasive diagnostic procedures", "Encourage the patient to eliminate all symptoms", "Establish a Urm therapeutic alliance with the patient", "Discourage the patient from asking questions"], "correct": 2}, {"id": 600, "q": "Which therapy is considered effective for body dysmorphic disorder and illness anxiety disorder?", "options": ["Electroconvulsive therapy", "Cognitive behavioral therapy (CBT)", "Psychoanalysis only", "Sleep deprivation"], "correct": 1}]}]}]
+</script>
+<script>
+var CATEGORIES = JSON.parse(document.getElementById("quiz-data").textContent);
+</script>
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   STORAGE
+============================================================ */
+var LS_PROGRESS = "zmed_progress_v1";
+var LS_MISTAKES = "zmed_mistakes_v1";
+var lsOk = true;
+function lsGet(key, fallback){
+  try{ var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+  catch(e){ lsOk = false; return fallback; }
+}
+function lsSet(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){ lsOk = false; }
+}
+var progressStore = lsGet(LS_PROGRESS, {});   // topicKey -> {answers:{qid:{chosen,correct}}, everWrong:{qid:true}, snapshot:null}
+var mistakesStore = lsGet(LS_MISTAKES, []);   // [{catId,topicId,qid,addedAt}] newest first
+
+function saveProgress(){ lsSet(LS_PROGRESS, progressStore); }
+function saveMistakes(){ lsSet(LS_MISTAKES, mistakesStore); }
+function topicKey(catId, topicId){ return catId + "::" + topicId; }
+
+/* ============================================================
+   DATA INDEX
+============================================================ */
+var CAT_BY_ID = {}, TOPIC_BY_KEY = {}, Q_BY_UID = {};
+CATEGORIES.forEach(function(cat){
+  CAT_BY_ID[cat.id] = cat;
+  cat.topics.forEach(function(t){
+    TOPIC_BY_KEY[topicKey(cat.id, t.id)] = { cat:cat, topic:t };
+    t.questions.forEach(function(q){
+      var uid = topicKey(cat.id, t.id) + "::" + q.id;
+      Q_BY_UID[uid] = { uid:uid, catId:cat.id, topicId:t.id, catName:cat.name, topicName:t.name, q:q };
+    });
+  });
+});
+
+function topicProgressCount(catId, topicId){
+  var tk = topicKey(catId, topicId);
+  var rec = progressStore[tk];
+  if(!rec) return 0;
+  return Object.keys(rec.answers || {}).length;
+}
+function topicHasSnapshot(catId, topicId){
+  var tk = topicKey(catId, topicId);
+  var rec = progressStore[tk];
+  return !!(rec && rec.snapshot);
+}
+
+/* ============================================================
+   NAV / SCREEN STATE
+============================================================ */
+var screens = {};
+["home","level2","setup","quiz","results","bank"].forEach(function(id){
+  screens[id] = document.getElementById("screen-" + id);
+});
+var homeBtn = document.getElementById("home-btn");
+var subheaderRow = document.getElementById("subheader-row");
+var headerCounter = document.getElementById("header-counter");
+var progressFill = document.getElementById("progress-fill");
+
+function showScreen(id){
+  Object.keys(screens).forEach(function(k){ screens[k].classList.toggle("active", k===id); });
+  subheaderRow.classList.toggle("active", id === "quiz");
+  homeBtn.style.visibility = (id === "home") ? "hidden" : "visible";
+  if(id !== "quiz"){ headerCounter.textContent=""; progressFill.style.width="0%"; }
+  window.scrollTo(0,0);
+}
+
+homeBtn.addEventListener("click", function(){ goHome(); });
+function goHome(){ renderHome(); showScreen("home"); }
+
+/* ============================================================
+   LEVEL 1: HOME
+============================================================ */
+var catGrid = document.getElementById("cat-grid");
+function renderHome(){
+  catGrid.innerHTML = "";
+  CATEGORIES.forEach(function(cat){
+    var btn = document.createElement("button");
+    btn.className = "cat-card";
+    btn.innerHTML =
+      '<div class="cat-icon">'+cat.icon+'</div>'+
+      '<div class="cat-info"><div class="name">'+escapeHtml(cat.name)+'</div>'+
+      '<div class="meta">'+cat.topics.length+' topics</div></div>'+
+      '<svg class="cat-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>';
+    btn.addEventListener("click", function(){ openCategory(cat.id); });
+    catGrid.appendChild(btn);
+  });
+
+  var mCount = mistakesStore.length;
+  var mBtn = document.createElement("button");
+  mBtn.className = "cat-card mistakes" + (mCount===0 ? " empty" : "");
+  mBtn.innerHTML =
+    '<div class="cat-icon">⚠️</div>'+
+    '<div class="cat-info"><div class="name">My Mistakes</div>'+
+    '<div class="meta">'+mCount+' questions</div></div>'+
+    '<svg class="cat-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>';
+  mBtn.addEventListener("click", function(){
+    if(mCount === 0){ toast("Your mistakes bank is empty."); return; }
+    openMistakesSetup();
+  });
+  catGrid.appendChild(mBtn);
+
+  if(mCount > 0){
+    var manageBtn = document.createElement("button");
+    manageBtn.className = "text-btn";
+    manageBtn.style.textAlign = "left";
+    manageBtn.style.margin = "-4px 0 4px 4px";
+    manageBtn.textContent = "Manage mistakes bank →";
+    manageBtn.addEventListener("click", function(e){ e.stopPropagation(); openBankList(); });
+    catGrid.appendChild(manageBtn);
+  }
+}
+
+/* ============================================================
+   LEVEL 2: TOPIC LIST
+============================================================ */
+var level2Title = document.getElementById("level2-title");
+var topicListEl = document.getElementById("topic-list");
+var level2FloatBar = document.getElementById("level2-floatbar");
+var selectToggleBtn = document.getElementById("select-toggle-btn");
+var selCountEl = document.getElementById("sel-count");
+var startSelectedBtn = document.getElementById("start-selected-btn");
+
+var currentCatId = null;
+var l2SelectMode = false;
+var l2Selected = {};
+
+function openCategory(catId){
+  currentCatId = catId;
+  l2SelectMode = false; l2Selected = {};
+  renderLevel2();
+  showScreen("level2");
+}
+
+function renderLevel2(){
+  var cat = CAT_BY_ID[currentCatId];
+  level2Title.textContent = cat.name;
+  topicListEl.innerHTML = "";
+  topicListEl.classList.toggle("select-mode", l2SelectMode);
+  selectToggleBtn.classList.toggle("on", l2SelectMode);
+  selectToggleBtn.textContent = l2SelectMode ? "Cancel" : "Select";
+
+  cat.topics.forEach(function(t, idx){
+    var answered = topicProgressCount(cat.id, t.id);
+    var total = t.questions.length;
+    var card = document.createElement("button");
+    card.className = "topic-card" + (l2Selected[t.id] ? " checked" : "");
+    var progHtml = answered > 0 ? '<div class="t-progress">'+answered+' of '+total+' answered'+(answered<total ? ' \u2014 '+(total-answered)+' remaining' : ' \u2014 complete')+'</div>' : '';
+    card.innerHTML =
+      '<div class="topic-badge">'+(idx+1)+'</div>'+
+      '<div class="topic-check"><svg viewBox="0 0 24 24" fill="none" stroke="#04202c" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>'+
+      '<div class="topic-info"><div class="t-name">'+escapeHtml(t.name)+'</div>'+
+      '<div class="t-sub">'+total+' questions</div>'+progHtml+'</div>';
+    card.addEventListener("click", function(){
+      if(l2SelectMode){
+        if(l2Selected[t.id]) delete l2Selected[t.id]; else l2Selected[t.id] = true;
+        renderLevel2();
+      } else {
+        openTopicSetup(cat.id, [t.id]);
+      }
+    });
+    topicListEl.appendChild(card);
+  });
+
+  var selKeys = Object.keys(l2Selected);
+  level2FloatBar.style.display = l2SelectMode ? "block" : "none";
+  var qCount = 0;
+  selKeys.forEach(function(tid){
+    var t = cat.topics.find(function(x){ return x.id === tid; });
+    if(t) qCount += t.questions.length;
+  });
+  selCountEl.textContent = selKeys.length + " selected \u00b7 " + qCount + " questions";
+  startSelectedBtn.disabled = selKeys.length === 0;
+}
+
+selectToggleBtn.addEventListener("click", function(){
+  l2SelectMode = !l2SelectMode; l2Selected = {}; renderLevel2();
+});
+document.getElementById("level2-back").addEventListener("click", goHome);
+startSelectedBtn.addEventListener("click", function(){
+  var tids = Object.keys(l2Selected);
+  if(!tids.length) return;
+  openTopicSetup(currentCatId, tids);
+});
+
+/* ============================================================
+   SETUP PANEL
+============================================================ */
+var setupTitle = document.getElementById("setup-title");
+var setupDesc = document.getElementById("setup-desc");
+var setupStatus = document.getElementById("setup-status");
+var setupBack = document.getElementById("setup-back");
+var segButtons = document.querySelectorAll(".seg-btn");
+var delaySliderWrap = document.getElementById("delay-slider-wrap");
+var delayRange = document.getElementById("delay-range");
+var delayLabel = document.getElementById("delay-label");
+var startQuizBtn = document.getElementById("start-quiz-btn");
+
+var setupScope = null; // {catId, topicIds, isMistakes, backTo}
+var requeueMode = "end"; // 'none' | 'time' | 'end'
+var requeueMinutes = 5;
+
+function openTopicSetup(catId, topicIds){
+  setupScope = { catId:catId, topicIds:topicIds, isMistakes:false };
+  var cat = CAT_BY_ID[catId];
+  var totalQs = 0;
+  if(topicIds.length === 1){
+    var t = cat.topics.find(function(x){ return x.id === topicIds[0]; });
+    setupTitle.textContent = t.name;
+    totalQs = t.questions.length;
+    var answered = topicProgressCount(catId, t.id);
+    var total = t.questions.length;
+    if(answered > 0){
+      setupStatus.style.display = "flex";
+      setupStatus.innerHTML = "You've answered "+answered+" of "+total+" \u2014 "+(total-answered)+" remaining"+
+        ' <button class="clear-link" id="clear-progress-btn">Clear progress</button>';
+      document.getElementById("clear-progress-btn").addEventListener("click", function(){
+        confirmAction("Clear your saved progress for \u201c"+t.name+"\u201d? This can't be undone.", function(){
+          var tk = topicKey(catId, t.id);
+          delete progressStore[tk];
+          saveProgress();
+          openTopicSetup(catId, topicIds);
+        });
+      });
+    } else {
+      setupStatus.style.display = "none";
+    }
+  } else {
+    setupTitle.textContent = cat.name + " \u2014 " + topicIds.length + " topics";
+    setupStatus.style.display = "none";
+    topicIds.forEach(function(tid){
+      var t2 = cat.topics.find(function(x){ return x.id === tid; });
+      if(t2) totalQs += t2.questions.length;
+    });
+  }
+  setupDesc.textContent = totalQs + " questions. Choose how you want questions you get wrong to reappear while you're working through the quiz.";
+  setupBack.onclick = function(){ showScreen("level2"); };
+  showScreen("setup");
+}
+
+function openMistakesSetup(){
+  setupScope = { catId:null, topicIds:null, isMistakes:true };
+  setupTitle.textContent = "My Mistakes";
+  setupStatus.style.display = "none";
+  setupDesc.textContent = mistakesStore.length + " questions. Choose how you want questions you get wrong to reappear while you're working through the quiz.";
+  setupBack.onclick = goHome;
+  showScreen("setup");
+}
+
+segButtons.forEach(function(btn){
+  btn.addEventListener("click", function(){
+    segButtons.forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    requeueMode = btn.getAttribute("data-mode");
+    delaySliderWrap.style.display = requeueMode === "time" ? "block" : "none";
+  });
+});
+delayRange.addEventListener("input", function(){
+  requeueMinutes = parseInt(delayRange.value, 10);
+  delayLabel.textContent = requeueMinutes + " min";
+});
+
+startQuizBtn.addEventListener("click", function(){
+  var pool = buildPool();
+  if(!pool.length){ toast("No questions available."); return; }
+  var resumeSnapshot = null;
+  if(setupScope.topicIds && setupScope.topicIds.length === 1){
+    var tk = topicKey(setupScope.catId, setupScope.topicIds[0]);
+    var rec = progressStore[tk];
+    if(rec && rec.snapshot) resumeSnapshot = rec.snapshot;
+  }
+  startQuiz(pool, resumeSnapshot);
+});
+
+function buildPool(){
+  if(setupScope.isMistakes){
+    return mistakesStore.map(function(m){
+      return Q_BY_UID[topicKey(m.catId, m.topicId) + "::" + m.qid];
+    }).filter(Boolean);
+  }
+  var cat = CAT_BY_ID[setupScope.catId];
+  var pool = [];
+  setupScope.topicIds.forEach(function(tid){
+    var t = cat.topics.find(function(x){ return x.id === tid; });
+    t.questions.forEach(function(q){
+      pool.push(Q_BY_UID[topicKey(cat.id, tid) + "::" + q.id]);
+    });
+  });
+  return pool;
+}
+
+/* ============================================================
+   QUIZ ENGINE
+============================================================ */
+var session = null;
+var letters = ["A","B","C","D","E","F"];
+
+var qCard = document.getElementById("q-card");
+var qHeader = document.getElementById("q-header-row");
+var scorePillEl = document.getElementById("score-pill");
+var quizExitBtn = document.getElementById("quiz-exit-btn");
+
+function startQuiz(pool, resumeSnapshot){
+  if(resumeSnapshot){
+    session = resumeSnapshot;
+  } else {
+    session = {
+      queue: pool.map(function(item){ return { uid:item.uid, isRequeued:false }; }),
+      pointer: 0,
+      answers: {},
+      wrongSet: {},
+      requeueMode: requeueMode,
+      requeueMinutes: requeueMinutes,
+      pendingRequeue: [],
+      requeuedOnce: {}
+    };
+  }
+  persistSnapshotIfSingleTopic();
+  showScreen("quiz");
+  renderQuizQuestion();
+}
+
+function persistSnapshotIfSingleTopic(){
+  if(setupScope && setupScope.topicIds && setupScope.topicIds.length === 1 && !setupScope.isMistakes){
+    var tk = topicKey(setupScope.catId, setupScope.topicIds[0]);
+    if(!progressStore[tk]) progressStore[tk] = { answers:{}, everWrong:{} };
+    progressStore[tk].snapshot = session;
+    saveProgress();
+  }
+}
+
+function currentItem(){ return session.queue[session.pointer]; }
+
+function renderQuizQuestion(){
+  var item = currentItem();
+  var ref = Q_BY_UID[item.uid];
+  var q = ref.q;
+  var answeredCount = uniqueAnsweredCount();
+  var uniqueTotal = uniqueQueueCount();
+
+  headerCounter.textContent = (session.pointer+1) + " / " + session.queue.length;
+  progressFill.style.width = Math.round(((session.pointer+1)/session.queue.length)*100) + "%";
+  qHeader.textContent = "QUESTION " + (session.pointer+1) + " OF " + session.queue.length;
+  scorePillEl.textContent = "Score: " + scoreCount();
+
+  var rec = session.answers[item.uid];
+  var html = "";
+  if(item.isRequeued) html += '<div class="review-badge">REVIEW</div>';
+  html += '<div class="q-text">' + escapeHtml(q.q) + '</div>';
+  html += '<div class="options">';
+  q.options.forEach(function(opt, i){
+    var cls = "opt-row";
+    if(rec){
+      cls += " locked";
+      if(i === q.correct) cls += " correct";
+      else if(i === rec.chosen) cls += " wrong";
+      else cls += " dim";
+    }
+    html += '<button class="'+cls+'" data-idx="'+i+'"><div class="opt-letter">'+letters[i]+'</div><div class="opt-text">'+escapeHtml(opt)+'</div></button>';
+  });
+  html += '</div>';
+  qCard.innerHTML = html;
+
+  if(!rec){
+    qCard.querySelectorAll(".opt-row").forEach(function(btn){
+      btn.addEventListener("click", function(){ answerQuestion(parseInt(btn.getAttribute("data-idx"),10)); });
+    });
+  }
+
+  document.getElementById("btn-prev").disabled = session.pointer === 0;
+  var nextBtn = document.getElementById("btn-next");
+  nextBtn.textContent = session.pointer === session.queue.length - 1 ? "Finish Quiz \u203a" : "Next \u203a";
+}
+
+function uniqueQueueCount(){
+  return new Set(session.queue.map(function(it){ return it.uid; })).size;
+}
+function uniqueAnsweredCount(){
+  return Object.keys(session.answers).length;
+}
+function scoreCount(){
+  var c = 0;
+  Object.keys(session.answers).forEach(function(uid){
+    if(session.answers[uid].correct) c++;
+  });
+  return c;
+}
+
+/* ---- sound effects ---- */
+var audioCtx = null;
+function getCtx(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ return null; }
+  }
+  return audioCtx;
+}
+function playCorrectSound(){
+  var ctx = getCtx(); if(!ctx) return;
+  var t = ctx.currentTime;
+  [ [800,t,0.1], [1200,t+0.1,0.15] ].forEach(function(cfg){
+    var osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.type = "sine"; osc.frequency.value = cfg[0];
+    gain.gain.setValueAtTime(0.18, cfg[1]);
+    gain.gain.exponentialRampToValueAtTime(0.001, cfg[1]+cfg[2]);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(cfg[1]); osc.stop(cfg[1]+cfg[2]);
+  });
+}
+function playWrongSound(){
+  var ctx = getCtx(); if(!ctx) return;
+  var t = ctx.currentTime;
+  var osc = ctx.createOscillator(), gain = ctx.createGain();
+  osc.type = "sawtooth"; osc.frequency.value = 200;
+  gain.gain.setValueAtTime(0.16, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t+0.35);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(t); osc.stop(t+0.35);
+}
+
+function answerQuestion(idx){
+  var item = currentItem();
+  var ref = Q_BY_UID[item.uid];
+  var q = ref.q;
+  var isCorrect = idx === q.correct;
+
+  session.answers[item.uid] = { chosen: idx, correct: isCorrect };
+
+  recordTopicProgress(ref, idx, isCorrect);
+
+  if(!isCorrect){
+    session.wrongSet[item.uid] = true;
+    addToMistakesBank(ref);
+    scheduleRequeue(item.uid);
+    playWrongSound();
+  } else {
+    delete session.wrongSet[item.uid];
+  }
+
+  persistSnapshotIfSingleTopic();
+  if(isCorrect) playCorrectSound();
+  renderQuizQuestion();
+}
+
+function recordTopicProgress(ref, chosen, correct){
+  var tk = topicKey(ref.catId, ref.topicId);
+  if(!progressStore[tk]) progressStore[tk] = { answers:{}, everWrong:{} };
+  var rec = progressStore[tk];
+  rec.answers[ref.q.id] = { chosen: chosen, correct: correct };
+  if(!correct) rec.everWrong[ref.q.id] = true;
+  saveProgress();
+}
+
+function addToMistakesBank(ref){
+  mistakesStore = mistakesStore.filter(function(m){
+    return !(m.catId===ref.catId && m.topicId===ref.topicId && m.qid===ref.q.id);
+  });
+  mistakesStore.unshift({ catId:ref.catId, topicId:ref.topicId, qid:ref.q.id, addedAt:Date.now() });
+  saveMistakes();
+}
+
+function scheduleRequeue(uid){
+  if(session.requeueMode === "none") return;
+  if(session.requeuedOnce[uid]) return;
+  session.requeuedOnce[uid] = true;
+  if(session.requeueMode === "time"){
+    session.pendingRequeue.push({ uid:uid, at: Date.now() + session.requeueMinutes*60000 });
+  } else if(session.requeueMode === "end"){
+    session.pendingRequeue.push({ uid:uid, at:null });
+  }
+}
+
+function checkPendingRequeues(){
+  if(!session.pendingRequeue.length) return false;
+  var now = Date.now();
+  var stillPending = [];
+  var injected = false;
+  session.pendingRequeue.forEach(function(pr){
+    var readyByTime = pr.at !== null && now >= pr.at;
+    var readyByEnd = pr.at === null && session.pointer >= session.queue.length-1;
+    var rec = session.answers[pr.uid];
+    var stillWrong = rec && !rec.correct;
+    if((readyByTime || readyByEnd) && stillWrong && session.wrongSet[pr.uid]){
+      session.queue.push({ uid: pr.uid, isRequeued:true });
+      delete session.answers[pr.uid];
+      injected = true;
+      if(readyByTime && document.hasFocus()) showToast("A missed question has been requeued.");
+    } else {
+      stillPending.push(pr);
+    }
+  });
+  session.pendingRequeue = stillPending;
+  return injected;
+}
+
+document.getElementById("btn-prev").addEventListener("click", function(){
+  if(session.pointer > 0){ session.pointer--; renderQuizQuestion(); }
+});
+document.getElementById("btn-next").addEventListener("click", function(){
+  checkPendingRequeues();
+  if(session.pointer < session.queue.length - 1){
+    session.pointer++;
+    persistSnapshotIfSingleTopic();
+    renderQuizQuestion();
+  } else {
+    var injected = checkPendingRequeues();
+    if(injected && session.pointer < session.queue.length - 1){
+      session.pointer++;
+      persistSnapshotIfSingleTopic();
+      renderQuizQuestion();
+    } else {
+      finishQuiz();
+    }
+  }
+});
+quizExitBtn.addEventListener("click", function(){
+  goHome();
+});
+
+/* ============================================================
+   RESULTS
+============================================================ */
+var resPct = document.getElementById("res-pct");
+var resCaption = document.getElementById("res-caption");
+var resCorrect = document.getElementById("res-correct");
+var resWrong = document.getElementById("res-wrong");
+var resTotal = document.getElementById("res-total");
+var reviewListEl = document.getElementById("review-list");
+
+function finishQuiz(){
+  var uniqueUids = Array.from(new Set(session.queue.map(function(it){ return it.uid; })));
+  var correctCount = 0, wrongUids = [];
+  uniqueUids.forEach(function(uid){
+    var rec = session.answers[uid];
+    if(rec && rec.correct) correctCount++;
+    else wrongUids.push(uid);
+  });
+  var total = uniqueUids.length;
+  var pct = total ? Math.round((correctCount/total)*100) : 0;
+
+  resPct.textContent = pct + "%";
+  resCaption.textContent = wrongUids.length===0 ? "Perfect run \u2014 nothing to review." : "Review the questions you missed below.";
+  resCorrect.textContent = correctCount;
+  resWrong.textContent = wrongUids.length;
+  resTotal.textContent = total;
+
+  reviewListEl.innerHTML = "";
+  if(wrongUids.length === 0){
+    reviewListEl.innerHTML = '<div class="empty-review">Nothing missed this round. Nicely done.</div>';
+  } else {
+    wrongUids.forEach(function(uid){
+      var ref = Q_BY_UID[uid];
+      var q = ref.q;
+      var rec = session.answers[uid];
+      var chosenText = rec ? q.options[rec.chosen] : "(not answered)";
+      var box = document.createElement("div");
+      box.className = "review-item";
+      var removeBtn = setupScope && setupScope.isMistakes ?
+        '<button class="review-remove" data-uid="'+uid+'">Remove from bank</button>' : '';
+      box.innerHTML =
+        '<div class="rq">'+escapeHtml(q.q)+'</div>'+
+        '<div class="ra-row wrong"><span class="tag">Your answer</span><span>'+escapeHtml(chosenText)+'</span></div>'+
+        '<div class="ra-row correct"><span class="tag">Correct</span><span>'+escapeHtml(q.options[q.correct])+'</span></div>'+
+        removeBtn;
+      reviewListEl.appendChild(box);
+    });
+    reviewListEl.querySelectorAll(".review-remove").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var uid = btn.getAttribute("data-uid");
+        var ref = Q_BY_UID[uid];
+        removeFromMistakesBank(ref.catId, ref.topicId, ref.q.id);
+        btn.parentElement.style.opacity = "0.4";
+        btn.disabled = true; btn.textContent = "Removed";
+      });
+    });
+  }
+
+  clearSnapshotIfSingleTopic();
+  showScreen("results");
+}
+
+function clearSnapshotIfSingleTopic(){
+  if(setupScope && setupScope.topicIds && setupScope.topicIds.length === 1 && !setupScope.isMistakes){
+    var tk = topicKey(setupScope.catId, setupScope.topicIds[0]);
+    if(progressStore[tk]) { progressStore[tk].snapshot = null; saveProgress(); }
+  }
+}
+
+document.getElementById("btn-restart").addEventListener("click", function(){
+  if(setupScope.isMistakes){ openMistakesSetup(); }
+  else { openTopicSetup(setupScope.catId, setupScope.topicIds); }
+});
+document.getElementById("btn-results-home").addEventListener("click", goHome);
+
+/* ============================================================
+   MISTAKES BANK MANAGE LIST
+============================================================ */
+var bankListEl = document.getElementById("bank-items");
+var bankSelectBtn = document.getElementById("bank-select-btn");
+var bankDeleteAllBtn = document.getElementById("bank-delete-all-btn");
+var bankDeleteSelectedBtn = document.getElementById("bank-delete-selected-btn");
+var bankSelCount = document.getElementById("bank-sel-count");
+var bankSelectMode = false;
+var bankSelected = {};
+
+function openBankList(){
+  bankSelectMode = false; bankSelected = {};
+  renderBankList();
+  showScreen("bank");
+}
+document.getElementById("bank-back").addEventListener("click", goHome);
+
+function renderBankList(){
+  bankListEl.innerHTML = "";
+  bankSelectBtn.textContent = bankSelectMode ? "Cancel" : "Select";
+  bankSelectBtn.classList.toggle("on", bankSelectMode);
+  var selKeys = Object.keys(bankSelected);
+  bankDeleteSelectedBtn.style.display = (bankSelectMode && selKeys.length>0) ? "inline" : "none";
+  bankSelCount.style.display = bankSelectMode ? "inline" : "none";
+  bankSelCount.textContent = selKeys.length + " selected";
+
+  if(mistakesStore.length === 0){
+    bankListEl.innerHTML = '<div class="empty-review">Your mistakes bank is empty.</div>';
+    return;
+  }
+
+  mistakesStore.forEach(function(m){
+    var uid = topicKey(m.catId, m.topicId) + "::" + m.qid;
+    var ref = Q_BY_UID[uid];
+    if(!ref) return;
+    var key = m.catId+"|"+m.topicId+"|"+m.qid;
+    var row = document.createElement("div");
+    row.className = "bank-item" + (bankSelectMode ? " select-mode" : "") + (bankSelected[key] ? " checked" : "");
+    row.innerHTML =
+      '<div class="b-check"><svg viewBox="0 0 24 24" fill="none" stroke="#04202c" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>'+
+      '<div class="b-info"><div class="b-q">'+escapeHtml(ref.q.q)+'</div><div class="b-topic">'+escapeHtml(ref.topicName)+'</div></div>'+
+      '<button class="b-remove">Remove</button>';
+    row.querySelector(".b-remove").addEventListener("click", function(e){
+      e.stopPropagation();
+      removeFromMistakesBank(m.catId, m.topicId, m.qid);
+      renderBankList();
+    });
+    row.addEventListener("click", function(){
+      if(!bankSelectMode) return;
+      if(bankSelected[key]) delete bankSelected[key]; else bankSelected[key] = true;
+      renderBankList();
+    });
+    bankListEl.appendChild(row);
+  });
+}
+
+bankSelectBtn.addEventListener("click", function(){
+  bankSelectMode = !bankSelectMode; bankSelected = {}; renderBankList();
+});
+bankDeleteAllBtn.addEventListener("click", function(){
+  if(!mistakesStore.length) return;
+  confirmAction("Delete all "+mistakesStore.length+" questions from your mistakes bank? This can't be undone.", function(){
+    mistakesStore = []; saveMistakes(); bankSelectMode=false; bankSelected={}; renderBankList(); renderHome();
+  });
+});
+bankDeleteSelectedBtn.addEventListener("click", function(){
+  var keys = Object.keys(bankSelected);
+  if(!keys.length) return;
+  confirmAction("Delete "+keys.length+" selected question(s) from your mistakes bank?", function(){
+    mistakesStore = mistakesStore.filter(function(m){
+      var key = m.catId+"|"+m.topicId+"|"+m.qid;
+      return keys.indexOf(key) === -1;
+    });
+    saveMistakes();
+    bankSelectMode = false; bankSelected = {};
+    renderBankList(); renderHome();
+  });
+});
+
+function removeFromMistakesBank(catId, topicId, qid){
+  mistakesStore = mistakesStore.filter(function(m){
+    return !(m.catId===catId && m.topicId===topicId && m.qid===qid);
+  });
+  saveMistakes();
+}
+
+/* ============================================================
+   HELPERS: toast, confirm, escape
+============================================================ */
+var toastEl = document.getElementById("toast");
+var toastTimer = null;
+function showToast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2600);
+}
+function toast(msg){ showToast(msg); }
+
+var confirmOverlay = document.getElementById("confirm-overlay");
+var confirmText = document.getElementById("confirm-text");
+var confirmYes = document.getElementById("confirm-yes");
+var confirmNo = document.getElementById("confirm-no");
+var confirmCb = null;
+function confirmAction(msg, cb){
+  confirmText.textContent = msg;
+  confirmCb = cb;
+  confirmOverlay.classList.add("active");
+}
+confirmYes.addEventListener("click", function(){
+  confirmOverlay.classList.remove("active");
+  if(confirmCb) confirmCb();
+  confirmCb = null;
+});
+confirmNo.addEventListener("click", function(){
+  confirmOverlay.classList.remove("active");
+  confirmCb = null;
+});
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+renderHome();
+showScreen("home");
+
+})();
+
+</script>
+</body>
+</html>
